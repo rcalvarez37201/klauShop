@@ -239,6 +239,23 @@ function ProductFrom({ product }: ProductsFormProps) {
             <FormMessage />
           </FormItem>
 
+          <FormItem>
+            <FormLabel className="text-sm">Stock*</FormLabel>
+            <FormControl>
+              <Input
+                type="number"
+                defaultValue={product?.stock ?? 0}
+                aria-invalid={!!form.formState.errors.stock}
+                placeholder="Stock quantity"
+                {...register("stock", { valueAsNumber: true })}
+              />
+            </FormControl>
+            <FormDescription>
+              Number of items available in inventory
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+
           <FormField
             control={form.control}
             name="featuredImageId"

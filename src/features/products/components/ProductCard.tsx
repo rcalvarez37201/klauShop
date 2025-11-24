@@ -1,9 +1,12 @@
-import React, { Suspense } from "react";
-import Image from "next/image";
-import Link from "next/link";
 import { DocumentType, gql } from "@/gql";
 import { cn, keytoUrl } from "@/lib/utils";
+import Image from "next/image";
+import Link from "next/link";
+import React, { Suspense } from "react";
 
+import { Icons } from "@/components/layouts/icons";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -12,13 +15,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Rating } from "@/components/ui/rating";
 import { AddToCartButton } from "@/features/carts";
 import { AddToWishListButton } from "@/features/wishlists";
-import { Rating } from "@/components/ui/rating";
 import { BadgeType } from "@/lib/supabase/schema";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Icons } from "@/components/layouts/icons";
 
 type CardProps = React.ComponentProps<typeof Card>;
 
@@ -35,6 +35,7 @@ export const ProductCardFragment = gql(/* GraphQL */ `
     slug
     badge
     price
+    stock
     featuredImage: medias {
       id
       key
@@ -91,6 +92,18 @@ export function ProductCard({
         </div>
 
         <div className="">${price}</div>
+
+        <div className="text-sm">
+          {product.stock === 0 ? (
+            <span className="text-red-500 font-semibold">Out of Stock</span>
+          ) : product.stock && product.stock < 5 ? (
+            <span className="text-yellow-600 font-semibold">
+              Low Stock ({product.stock} left)
+            </span>
+          ) : (
+            <span className="text-green-600">In Stock ({product.stock})</span>
+          )}
+        </div>
 
         <div className="hidden md:block">
           <Rating value={product.rating} precision={0.5} readOnly />

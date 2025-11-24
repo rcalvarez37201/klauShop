@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import Header from "@/components/layouts/Header";
 import { Shell } from "@/components/layouts/Shell";
 import {
@@ -19,6 +18,7 @@ import { gql } from "@/gql";
 import { getClient } from "@/lib/urql";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 type Props = {
   params: {
@@ -40,6 +40,7 @@ const ProductDetailPageQuery = gql(/* GraphQL */ `
           description
           rating
           price
+          stock
           tags
           totalComments
           ...ProductImageShowcaseFragment
@@ -70,7 +71,7 @@ const ProductDetailPageQuery = gql(/* GraphQL */ `
 `);
 
 async function ProductDetailPage({ params }: Props) {
-  const { data, error } = await getClient().query(ProductDetailPageQuery, {
+  const { data } = await getClient().query(ProductDetailPageQuery, {
     productSlug: params.slug as string,
   });
 
@@ -96,6 +97,25 @@ async function ProductDetailPage({ params }: Props) {
               <p className="text-2xl font-semibold mb-3">{`$${price}`}</p>
             </div>
             <AddToWishListButton productId={id} />
+          </section>
+
+          <section className="mb-5">
+            {data.productsCollection.edges[0].node.stock === 0 ? (
+              <div className="text-red-500 font-semibold text-lg">
+                Out of Stock
+              </div>
+            ) : data.productsCollection.edges[0].node.stock &&
+              data.productsCollection.edges[0].node.stock < 5 ? (
+              <div className="text-yellow-600 font-semibold">
+                Low Stock - Only {data.productsCollection.edges[0].node.stock}{" "}
+                left!
+              </div>
+            ) : (
+              <div className="text-green-600 font-semibold">
+                In Stock ({data.productsCollection.edges[0].node.stock}{" "}
+                available)
+              </div>
+            )}
           </section>
 
           <section className="flex mb-8 items-end space-x-5">

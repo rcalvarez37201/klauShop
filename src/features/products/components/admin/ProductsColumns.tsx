@@ -1,8 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import DeleteDialog from "@/components/ui/deleteDialog";
 import {
@@ -11,7 +8,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { gql, DocumentType } from "@/gql";
+import { DocumentType, gql } from "@/gql";
+import { ColumnDef } from "@tanstack/react-table";
+import { MoreHorizontal } from "lucide-react";
+import Link from "next/link";
 
 export const ProductColumnFragment = gql(/* GraphQL */ `
   fragment ProductColumnFragment on products {
@@ -22,6 +22,7 @@ export const ProductColumnFragment = gql(/* GraphQL */ `
     slug
     badge
     price
+    stock
     badge
     featured
     featuredImage: medias {
@@ -97,6 +98,22 @@ const ProductsColumns: ColumnDef<{
     },
   },
   {
+    accessorKey: "stock",
+    header: () => <div className="">Stock</div>,
+    cell: ({ row }) => {
+      const product = row.original.node;
+      const stockValue = product.stock ?? 0;
+      const stockColor =
+        stockValue === 0
+          ? "text-red-500"
+          : stockValue < 5
+            ? "text-yellow-500"
+            : "text-green-500";
+
+      return <div className={`font-medium ${stockColor}`}>{stockValue}</div>;
+    },
+  },
+  {
     id: "actions",
     header: () => <div className="text-center capitalize">Actions</div>,
     cell: ({ row }) => {
@@ -129,18 +146,5 @@ const ProductsColumns: ColumnDef<{
     },
   },
 ];
-
-const DeleteCategoryDialog = ({ categoryId }: { categoryId: string }) => {
-  const onClickHandler = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    // await deleteCategoryAction(categoryId)
-  };
-  return (
-    <DeleteDialog
-      onClickHandler={onClickHandler}
-      title="Delete Proejct"
-      actionLabel="Delete"
-    />
-  );
-};
 
 export default ProductsColumns;
