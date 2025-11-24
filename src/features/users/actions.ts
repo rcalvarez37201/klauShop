@@ -1,14 +1,15 @@
 "use server";
 
+import { AdminUserFormData } from "@/features/users/validations";
 import db from "@/lib/supabase/db";
-import createServerClient from "@/lib/supabase/server";
+import {
+  default as createClient,
+  default as createServerClient,
+} from "@/lib/supabase/server";
 import { User } from "@supabase/supabase-js";
 import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { profiles } from "../../lib/supabase/schema";
-import { AdminUserFormData } from "@/features/users/validations";
-import { env } from "@/env.mjs";
-import createClient from "@/lib/supabase/server";
 
 export const getCurrentUser = async () => {
   const cookieStore = cookies();
@@ -35,7 +36,7 @@ export const getUser = async ({ userId }: { userId: string }) => {
     .admin;
 
   try {
-    const { data, error } = await adminAuthClient.getUserById(userId);
+    const { data } = await adminAuthClient.getUserById(userId);
     return data;
   } catch (err) {
     throw new Error("There is an error");
@@ -55,7 +56,6 @@ export const listUsers = async ({
 
   const {
     data: { users },
-    error,
   } = await adminAuthClient.listUsers({
     page,
     perPage,
