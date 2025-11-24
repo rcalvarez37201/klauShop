@@ -9,8 +9,8 @@ export const env = createEnv({
   server: {
     DATABASE_URL: z.string(),
     NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
-    STRIPE_SECRET_KEY: z.string(),
-    STRIPE_WEBHOOK_SECERT_KEY: z.string(),
+    STRIPE_SECRET_KEY: z.string().optional(),
+    STRIPE_WEBHOOK_SECERT_KEY: z.string().optional(),
     DATABASE_SERVICE_ROLE: z.string(),
     S3_ACCESS_KEY_ID: z.string(),
     S3_SECRET_ACCESS_KEY: z.string(),
@@ -28,7 +28,7 @@ export const env = createEnv({
     NEXT_PUBLIC_SUPABASE_PROJECT_REF: z.string(),
     NEXT_PUBLIC_S3_BUCKET: z.string(),
     NEXT_PUBLIC_S3_REGION: z.string(),
-    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string(),
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().optional(),
     NEXT_PUBLIC_SUPABASE_URL: z.string(),
   },
 
