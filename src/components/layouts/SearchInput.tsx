@@ -13,9 +13,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
-import { Icons } from "./icons";
-import { Input } from "../ui/input";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Input } from "../ui/input";
+import { Icons } from "./icons";
 
 const filterSelectionSchema = z.object({
   search: z.string(),
@@ -41,12 +41,12 @@ function SearchInput() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="relative bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 rounded-full flex-1"
+        className="relative p-4 rounded-full flex-1"
       >
         <Icons.search
           className={cn(
             isFocused ? "scale-0" : "scale-100",
-            "absolute left-8 top-6 h-6 w-4 text-muted-foreground transition-all duration-500",
+            "absolute left-8 top-6 h-6 w-4 text-muted-foreground transition-all duration-500"
           )}
         />
 
@@ -61,7 +61,7 @@ function SearchInput() {
                   placeholder="Find your Favour Furniture and Bring them to Home"
                   className={cn(
                     isFocused ? "pl-6" : "pl-10",
-                    "rounded-full transition-all duration-500",
+                    "rounded-full transition-all duration-500"
                   )}
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
@@ -75,7 +75,7 @@ function SearchInput() {
           <Icons.search
             className={cn(
               "h-4 w-4 text-muted-foreground transition-all duration-200",
-              isFocused ? "opacity-1 scale-1" : "opacity-0 scale-0",
+              isFocused ? "opacity-1 scale-1" : "opacity-0 scale-0"
             )}
           />
         </Button>

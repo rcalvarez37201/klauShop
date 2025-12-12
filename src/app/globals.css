@@ -32,7 +32,7 @@
     --input: 220 13% 91%;
     --ring: 258 66% 51%;
 
-    --radius: 0.1rem;
+    --radius: 0.75rem;
   }
 
   .dark {
@@ -71,7 +71,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
 }
 

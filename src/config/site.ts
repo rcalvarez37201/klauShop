@@ -57,7 +57,7 @@ export function getPageTitle(pageTitle?: string): string {
  */
 export function getPageMetadata(
   title?: string,
-  description?: string
+  description?: string,
 ): Metadata {
   return {
     title: getPageTitle(title),

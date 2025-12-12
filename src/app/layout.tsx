@@ -1,11 +1,14 @@
 import { Toaster } from "@/components/ui/toaster";
 import { getPageMetadata } from "@/config/site";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Sora } from "next/font/google";
 import CustomProvider from "../providers/CustomProvider";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const sora = Sora({
+  subsets: ["latin"],
+  variable: "--font-sora",
+});
 
 export const metadata: Metadata = getPageMetadata();
 
@@ -15,9 +18,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={sora.variable}>
       <CustomProvider>
-        <body className={inter.className}>
+        <body className={sora.className}>
           {children}
           <Toaster />
         </body>

@@ -1,12 +1,15 @@
 "use client";
 
-import * as React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import * as React from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
+import { Icons } from "@/components/layouts/icons";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -72,9 +75,16 @@ export function SignInForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Email Address</FormLabel>
               <FormControl>
-                <Input placeholder="email@domain.com" {...field} />
+                <div className="relative">
+                  <Icons.mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="your@example.com"
+                    className="pl-10"
+                    {...field}
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -88,7 +98,7 @@ export function SignInForm() {
               <FormLabel>Password</FormLabel>
               <FormControl>
                 <PasswordInput
-                  placeholder="**********"
+                  placeholder="Enter your password"
                   {...field}
                   className="w-full"
                 />
@@ -97,11 +107,28 @@ export function SignInForm() {
             </FormItem>
           )}
         />
-        <Button disabled={isPending}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Checkbox id="remember" />
+            <label
+              htmlFor="remember"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Remember me
+            </label>
+          </div>
+          <Link
+            href="/sign-in/reset-password"
+            className="text-sm text-primary underline-offset-4 transition-colors hover:underline"
+          >
+            Forgot your password?
+          </Link>
+        </div>
+        <Button disabled={isPending} className="w-full rounded-full">
           {isPending && (
             <Spinner className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
           )}
-          Sign in
+          Sign In
           <span className="sr-only">Sign in</span>
         </Button>
       </form>

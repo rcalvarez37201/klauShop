@@ -1,8 +1,8 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
-import { cva, type VariantProps } from "class-variance-authority";
 import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement>,
@@ -24,7 +24,7 @@ const inputVariants = cva(
     defaultVariants: {
       variant: "default",
     },
-  },
+  }
 );
 
 // const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -60,7 +60,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       //   {...props}
       // />
     );
-  },
+  }
 );
 
 Input.displayName = "Input";

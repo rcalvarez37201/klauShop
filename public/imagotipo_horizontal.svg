@@ -10,7 +10,7 @@
 
   <!-- Text -->
   <text x="210" y="132" font-size="64" font-weight="700" fill="#111827"
-        font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif">
+        font-family="Sora, sans-serif">
     Klau’s
   </text>
   <text x="210" y="182" font-size="44" font-weight="700" fill="#5B21B6"

@@ -9,16 +9,16 @@ import {
 } from "@/components/ui/sheet";
 import { siteConfig } from "@/config/site";
 import Link from "next/link";
-import { Icons } from "./icons";
 import Branding from "./Branding";
 import SocialMedias from "./SocialMedias";
+import { Icons } from "./icons";
 
 export function SideMenu() {
   return (
     <Sheet>
       <SheetTrigger asChild>
         <Button variant="ghost" className="p-0">
-          <Icons.menu />
+          <Icons.menu className="text-primary" />
         </Button>
       </SheetTrigger>
 

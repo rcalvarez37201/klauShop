@@ -1,13 +1,13 @@
+import { UserNav } from "@/features/auth";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Suspense } from "react";
 import { CartLink, CartNav } from "../../features/carts";
-import { UserNav } from "@/features/auth";
-import { Icons } from "./icons";
 import Branding from "./Branding";
 import MobileNavbar from "./MobileNavbar";
 import SearchInput from "./SearchInput";
 import { SideMenu } from "./SideMenu";
+import { Icons } from "./icons";
 
 interface MainNavbarProps {
   adminLayout?: boolean;
@@ -15,10 +15,10 @@ interface MainNavbarProps {
 
 async function MainNavbar({ adminLayout = false }: MainNavbarProps) {
   return (
-    <nav className="bg-background/95 fixed z-50 w-full">
+    <nav className="bg-primary-50 border-b border-primary-300 fixed z-50 w-full">
       <div
         className={cn(
-          adminLayout ? "mx-auto px-[3rem] max-w-[2500px] py-3" : "container",
+          adminLayout ? "mx-auto px-[3rem] max-w-[2500px] py-3" : "container"
         )}
       >
         <div className="hidden md:flex gap-x-8 justify-between items-center">
@@ -43,7 +43,10 @@ async function MainNavbar({ adminLayout = false }: MainNavbarProps) {
             </Suspense>
 
             <Link href={"/wish-list"}>
-              <Icons.heart className="w-4 h-4" aria-label="wishlist" />
+              <Icons.heart
+                className="w-5 h-5 text-primary"
+                aria-label="wishlist"
+              />
             </Link>
 
             <Suspense fallback={<CartLink productCount={0} />}>

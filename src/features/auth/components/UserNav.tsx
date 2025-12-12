@@ -36,7 +36,7 @@ function UserNav() {
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="relative h-8 w-8 rounded-full focus:ring-0 border-0"
+              className="relative h-auto px-2 py-1.5 rounded-full focus:ring-0 border-0 flex items-center gap-2"
             >
               <Avatar className="h-8 w-8 focus:ring-0 border-0">
                 {/* TODO: UPDATE AVATOR IMAGE & NAME */}
@@ -46,12 +46,15 @@ function UserNav() {
                     (user.user_metadata.name as string) ?? "Name"
                   )}
                 />
-                <AvatarFallback>
+                <AvatarFallback className="text-accent border border-primary bg-primary-200">
                   {getNameInitials(
                     (user.user_metadata.name as string) ?? "Name"
                   )}
                 </AvatarFallback>
               </Avatar>
+              <span className="text-sm font-medium hidden sm:inline-block text-primary">
+                {user.user_metadata.name || "User"}
+              </span>
             </Button>
           </DropdownMenuTrigger>
 
@@ -114,8 +117,8 @@ function UserNav() {
         </DropdownMenu>
       ) : (
         <Link href="/sign-in" className="flex items-center text-foreground">
-          <Icons.user className="h-4 w-4 mr-3" />
-          <p className="text-sm">Sign in</p>
+          <Icons.user className="h-5 w-5 mr-2 text-primary" />
+          <p className="text-sm text-primary">Sign in</p>
         </Link>
       )}
     </>
