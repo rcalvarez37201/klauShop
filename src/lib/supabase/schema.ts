@@ -390,6 +390,9 @@ export const collections = pgTable(
     featuredImageId: text("featured_image_id")
       .notNull()
       .references(() => medias.id, { onDelete: "restrict" }),
+    parentId: text("parent_id").references((): any => collections.id, {
+      onDelete: "set null",
+    }),
   },
   (table) => {
     return {
@@ -397,6 +400,11 @@ export const collections = pgTable(
         columns: [table.featuredImageId],
         foreignColumns: [medias.id],
         name: "featured_image",
+      }),
+      parent: foreignKey({
+        columns: [table.parentId],
+        foreignColumns: [table.id],
+        name: "parent_collection",
       }),
     };
   },

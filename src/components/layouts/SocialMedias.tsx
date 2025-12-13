@@ -1,7 +1,6 @@
-import React from "react";
-import { Icons } from "./icons";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { Icons } from "./icons";
 
 type Props = {
   containerClassName?: string;
@@ -14,7 +13,7 @@ function SocialMedias({ containerClassName, itemsClassName }: Props) {
       <Link href="https://github.com/clonglam/HIYORI-master" target="_blank">
         <Icons.gitHub
           className={cn(
-            "w-4 h-4 md:w-5 md:h-5 text-muted-foreground hover:text-primary",
+            "w-4 h-4 md:w-5 md:h-5 text-primary hover:text-primary-700",
             itemsClassName,
           )}
         />
@@ -23,7 +22,7 @@ function SocialMedias({ containerClassName, itemsClassName }: Props) {
       <Link href="https://twitter.com/ClongLam" target="_blank">
         <Icons.twitter
           className={cn(
-            "w-4 h-4 md:w-5 md:h-5 text-muted-foreground hover:text-primary",
+            "w-4 h-4 md:w-5 md:h-5 text-primary hover:text-primary-700",
             itemsClassName,
           )}
         />
@@ -32,7 +31,7 @@ function SocialMedias({ containerClassName, itemsClassName }: Props) {
       <Link href="https://hugo-coding.com" target="_blank">
         <Icons.globe
           className={cn(
-            "w-4 h-4 md:w-5 md:h-5 text-muted-foreground hover:text-primary",
+            "w-4 h-4 md:w-5 md:h-5 text-primary hover:text-primary-700",
             itemsClassName,
           )}
         />

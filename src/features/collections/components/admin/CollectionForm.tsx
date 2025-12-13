@@ -20,15 +20,22 @@ import { Input } from "@/components/ui/input";
 import { InsertCollection, collections } from "@/lib/supabase/schema";
 
 import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
+import { ImageDialog } from "@/features/medias";
 import { DocumentType, gql } from "@/gql";
-import { useMutation } from "@urql/next";
+import { useMutation, useQuery } from "@urql/next";
 import { nanoid } from "nanoid";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ImageDialog } from "@/features/medias";
 import {
   CreateCollectionMutation,
   UpdateCollectionMutation,
@@ -42,8 +49,84 @@ const CollectionFromFragment = gql(/* GraphQL */ `
     description
     title
     featured_image_id
+    parent_id
   }
 `);
+
+const CollectionsQuery = gql(/* GraphQL */ `
+  query CollectionsQuery {
+    collectionsCollection(orderBy: [{ label: AscNullsLast }]) {
+      edges {
+        node {
+          id
+          label
+        }
+      }
+    }
+  }
+`);
+
+type CollectionEdge = {
+  node: {
+    id: string;
+    label: string;
+  };
+};
+
+function ParentCollectionSelect({
+  value,
+  onChange,
+  excludeId,
+  disabled,
+  collections,
+  fetching,
+  error,
+}: {
+  value: string | null | undefined;
+  onChange: (value: string | null) => void;
+  excludeId?: string;
+  disabled?: boolean;
+  collections: CollectionEdge[];
+  fetching: boolean;
+  error?: any;
+}) {
+  const filteredCollections = collections.filter(
+    ({ node: parentCollection }) => parentCollection.id !== excludeId,
+  );
+
+  return (
+    <Select
+      onValueChange={(val) => onChange(val === "none" ? null : val)}
+      value={value || "none"}
+      disabled={disabled || fetching}
+    >
+      <FormControl>
+        <SelectTrigger>
+          <SelectValue placeholder="Select a parent collection (optional)" />
+        </SelectTrigger>
+      </FormControl>
+      <SelectContent>
+        <SelectItem value="none">None (Root Collection)</SelectItem>
+        {error ? (
+          <SelectItem value="error" disabled>
+            Error loading collections
+          </SelectItem>
+        ) : fetching && collections.length === 0 ? (
+          <SelectItem value="loading" disabled>
+            Loading collections...
+          </SelectItem>
+        ) : (
+          filteredCollections.map(({ node: parentCollection }) => (
+            <SelectItem value={parentCollection.id} key={parentCollection.id}>
+              {parentCollection.label}
+            </SelectItem>
+          ))
+        )}
+      </SelectContent>
+    </Select>
+  );
+}
+
 type CollectionFormProps = {
   collection?: DocumentType<typeof CollectionFromFragment>;
 };
@@ -56,26 +139,38 @@ function CollectionForm({ collection }: CollectionFormProps) {
   const [, updateCollection] = useMutation(UpdateCollectionMutation);
   const [, createCollection] = useMutation(CreateCollectionMutation);
 
+  // Query collections once at the parent level
+  const [{ data, fetching, error }] = useQuery({
+    query: CollectionsQuery,
+    requestPolicy: "cache-first",
+  });
+
+  const collectionsList = data?.collectionsCollection?.edges || [];
+
   const form = useForm<InsertCollection>({
     resolver: zodResolver(createInsertSchema(collections)),
     defaultValues: {
       ...collection,
       featuredImageId: collection ? collection.featured_image_id : undefined,
+      parentId: collection?.parent_id || undefined,
     },
   });
 
-  const {
-    register,
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = form;
+  const { register, handleSubmit } = form;
 
   const onSubmit = handleSubmit(async (data: InsertCollection) => {
     setIsPending(true);
     try {
+      const mutationData = {
+        ...data,
+        parentId: data.parentId || null,
+      };
+
       if (collection) {
-        const res = await updateCollection(data);
+        const res = await updateCollection({
+          id: collection.id,
+          ...mutationData,
+        });
         setIsPending(false);
         if (res.data) {
           router.push("/admin/collections");
@@ -83,7 +178,10 @@ function CollectionForm({ collection }: CollectionFormProps) {
           toast({ title: "Success Collection is updated." });
         }
       } else {
-        const res = await createCollection({ id: nanoid(), ...data });
+        const res = await createCollection({
+          id: nanoid(),
+          ...mutationData,
+        });
         setIsPending(false);
         if (res.data) {
           router.push("/admin/collections");
@@ -160,12 +258,16 @@ function CollectionForm({ collection }: CollectionFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Featured Image*</FormLabel>
-                <Suspense>
+                <Suspense
+                  fallback={
+                    <div className="h-32 w-full bg-muted animate-pulse rounded-md" />
+                  }
+                >
                   <div className="">
                     <ImageDialog
                       defaultValue={collection?.featured_image_id}
                       onChange={field.onChange}
-                      value={field.value}
+                      value={field.value || undefined}
                     />
                   </div>
                 </Suspense>
@@ -173,6 +275,29 @@ function CollectionForm({ collection }: CollectionFormProps) {
                 <FormDescription>
                   Drag n Drop the image to above section or click the button to
                   select from Image gallery.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="parentId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Parent Collection</FormLabel>
+                <ParentCollectionSelect
+                  value={field.value}
+                  onChange={field.onChange}
+                  excludeId={collection?.id}
+                  collections={collectionsList}
+                  fetching={fetching}
+                  error={error}
+                />
+                <FormDescription>
+                  Select a parent collection to create a hierarchical structure.
+                  Leave as &quot;None&quot; for root-level collections.
                 </FormDescription>
                 <FormMessage />
               </FormItem>

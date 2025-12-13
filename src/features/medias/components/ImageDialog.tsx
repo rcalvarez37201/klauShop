@@ -10,10 +10,8 @@ import {
 import ImagePreviewCard from "@/features/medias/components/ImagePreviewCard";
 import React, { Suspense } from "react";
 import UploadMediaContainer from "./UploadMediaContainer";
-import { useFormField } from "@/components/ui/form";
-import { useFieldArray, useFormContext } from "react-hook-form";
 
-type Props = {
+type ImageDialogProps = {
   onChange: (data: string) => void;
   defaultValue?: string;
   multiple?: boolean;
@@ -26,7 +24,7 @@ function ImageDialog({
   onChange,
   value,
   defaultValue,
-}: Props) {
+}: ImageDialogProps) {
   const [dialogOpen, setDialogOpen] = React.useState(modalOpen);
   // const { control, setError, getValues, setValue } = useFormContext()
   // const { fields, remove, append, update, move, swap } = useFieldArray({
@@ -38,19 +36,29 @@ function ImageDialog({
     setDialogOpen(false);
   };
 
+  const displayValue = value || defaultValue;
+
   return (
     <div>
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger>
           <div>
-            {value ? (
-              <ImagePreviewCard
-                key={value}
-                onClick={() => {}}
-                mediaId={value}
-              />
+            {displayValue ? (
+              <Suspense
+                fallback={
+                  <div className="h-32 w-32 bg-muted animate-pulse rounded-md" />
+                }
+              >
+                <ImagePreviewCard
+                  key={displayValue}
+                  onClick={() => {}}
+                  mediaId={displayValue}
+                />
+              </Suspense>
             ) : (
-              "Select / Add Image"
+              <div className="h-32 w-32 border-2 border-dashed border-muted-foreground/25 rounded-md flex items-center justify-center text-sm text-muted-foreground">
+                Select / Add Image
+              </div>
             )}
           </div>
         </DialogTrigger>
@@ -58,7 +66,11 @@ function ImageDialog({
         <DialogContent className="max-w-[1080px] min-h-full md:min-h-[480px]">
           <DialogHeader>
             <DialogTitle className="mb-5">Image Gallery</DialogTitle>
-            <Suspense>
+            <Suspense
+              fallback={
+                <div className="h-64 w-full bg-muted animate-pulse rounded-md" />
+              }
+            >
               <UploadMediaContainer
                 onClickItemsHandler={onClickHandler}
                 defaultImageId={defaultValue}

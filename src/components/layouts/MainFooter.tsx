@@ -2,7 +2,6 @@ import { siteConfig } from "@/config/site";
 import { NavItemWithOptionalChildren } from "@/types";
 import Link from "next/link";
 import Branding from "./Branding";
-import NewsletterForm from "./NewsletterForm";
 import SocialMedias from "./SocialMedias";
 
 type Props = {};
@@ -92,34 +91,13 @@ function MainFooter({}: Props) {
   ];
 
   return (
-    <footer className="bg-muted-background mt-[80px] md:mt-[180px] border-t border-zinc-600">
-      <div className="container pb-10 pt-4 md:pt-8">
+    <footer className="bg-primary-50 mt-[80px] md:mt-[180px] border-t border-primary-300">
+      <div className="container pb-10 pt-4 md:pt-8 max-w-screen-2xl mx-auto">
         <div className="hidden md:grid grid-cols-5 mb-[80px] gap-x-[100px] place-content-between space-y-9">
-          <div className="max-w-md col-span-5 lg:col-span-2">
-            <NewsletterForm />
-          </div>
-
-          <div className="grid grid-cols-3 col-span-5 lg:col-span-3 gap-x-6 max-w-[680px]">
-            {footerSiteMap.map(({ title, items }, index) => (
-              <div key={index}>
-                <p className="font-semibold mb-3">{title}</p>
-                <div className="flex flex-col gap-y-2 flex-wrap">
-                  {items?.map((i, index) => (
-                    <Link href={i.href || ""} key={index} className="text-sm">
-                      {i.title}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex gap-x-5 justify-between flex-col md:flex-row md:items-center items-start ">
           {/* <div className="grid gap-x-5 justify-between items-center"> */}
-          <div className="flex flex-col md:flex-row gap-x-5 md:items-center items-start mb-4 md:mb-0">
-            <Branding className="text-3xl" />
-            <div className="text-[10px] font-light">
+          <div className="flex col-span-2 flex-col gap-x-5 items-start mb-4 md:mb-0">
+            <Branding width={180} height={80} />
+            <div className="text-sm font-light">
               <p>{siteConfig.address}</p>
               <p>
                 {siteConfig.phone} /{" "}
@@ -132,7 +110,28 @@ function MainFooter({}: Props) {
               </p>
             </div>
           </div>
+          <div className="grid grid-cols-3 col-span-5 lg:col-span-3 gap-x-6 max-w-[680px]">
+            {footerSiteMap.map(({ title, items }, index) => (
+              <div key={index}>
+                <p className="font-semibold mb-3 text-primary">{title}</p>
+                <div className="flex flex-col gap-y-2 flex-wrap">
+                  {items?.map((i, index) => (
+                    <Link
+                      href={i.href || ""}
+                      key={index}
+                      className="text-sm text-primary-800"
+                    >
+                      {i.title}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
+        <div className="flex gap-x-5 justify-between flex-col md:flex-row md:items-center items-start">
+          <div></div>
           <SocialMedias containerClassName="mr-12" />
         </div>
       </div>

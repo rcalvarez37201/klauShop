@@ -34,24 +34,42 @@ function ImagePreviewCard({ mediaId }: ImagePreviewCard) {
     variables: {
       mediaId: mediaId,
     },
+    pause: !mediaId,
+    requestPolicy: "cache-first",
   });
+
+  if (!mediaId) {
+    return (
+      <div className="h-32 w-32 border-2 border-dashed border-muted-foreground/25 rounded-md flex items-center justify-center text-sm text-muted-foreground">
+        No image
+      </div>
+    );
+  }
 
   if (fetching)
     return (
-      <div>
-        <Skeleton />
-      </div>
+      <Card className="group relative">
+        <Skeleton className="w-[120px] h-[120px]" />
+      </Card>
     );
 
-  if (error) return <div>Error! Media fetch error</div>;
+  if (error) {
+    return (
+      <Card className="group relative">
+        <div className="w-[120px] h-[120px] flex items-center justify-center text-xs text-destructive">
+          Error loading image
+        </div>
+      </Card>
+    );
+  }
 
-  if (data && data.mediasCollection.edges[0].node) {
+  if (data && data.mediasCollection.edges[0]?.node) {
     const media = data.mediasCollection.edges[0].node;
     return (
       <Card className="group relative">
         <div className="relative">
           <Image
-            className="group-hover:opacity-80 transition-all duration-200"
+            className="group-hover:opacity-80 transition-all duration-200 rounded-md"
             src={keytoUrl(media.key)}
             alt={media.alt}
             width={120}
@@ -66,6 +84,14 @@ function ImagePreviewCard({ mediaId }: ImagePreviewCard) {
       </Card>
     );
   }
+
+  return (
+    <Card className="group relative">
+      <div className="w-[120px] h-[120px] flex items-center justify-center text-xs text-muted-foreground">
+        Image not found
+      </div>
+    </Card>
+  );
 }
 
 export default ImagePreviewCard;

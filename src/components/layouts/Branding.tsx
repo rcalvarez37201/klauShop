@@ -3,9 +3,9 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 
-type Props = { className?: string };
+type Props = { className?: string; width?: number; height?: number };
 
-function Branding({ className }: Props) {
+function Branding({ className, width = 100, height = 100 }: Props) {
   return (
     <Link
       href="/"
@@ -14,8 +14,8 @@ function Branding({ className }: Props) {
       <Image
         src="/imagotipo_horizontal.svg"
         alt={siteConfig.name}
-        width={100}
-        height={100}
+        width={width}
+        height={height}
       />
     </Link>
   );

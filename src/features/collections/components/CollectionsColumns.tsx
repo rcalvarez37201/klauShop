@@ -1,17 +1,17 @@
 "use client";
 
-import Link from "next/link";
-import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import DeleteDialog from "@/components/ui/deleteDialog";
+import { DocumentType, gql } from "@/gql";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { gql, DocumentType } from "@/gql";
+} from "@radix-ui/react-dropdown-menu";
+import { ColumnDef } from "@tanstack/react-table";
+import { MoreHorizontal } from "lucide-react";
+import Link from "next/link";
 
 export const CollectionColumnsFragment = gql(/* GraphQL */ `
   fragment CollectionColumnsFragment on collections {
@@ -20,6 +20,12 @@ export const CollectionColumnsFragment = gql(/* GraphQL */ `
     label
     description
     slug
+    parent_id
+    collections {
+      id
+      label
+      title
+    }
   }
 `);
 
@@ -46,9 +52,9 @@ const CollectionsColumns: ColumnDef<{
     accessorKey: "slug",
     header: () => <div className="">Slug</div>,
     cell: ({ row }) => {
-      const product = row.original.node;
+      const collection = row.original.node;
 
-      return <div className="font-medium">{product.slug}</div>;
+      return <div className="font-medium">{collection.slug}</div>;
     },
   },
   {
@@ -61,6 +67,28 @@ const CollectionsColumns: ColumnDef<{
         <p className="font-medium capitalize px-3 hover:underline">
           {collection.title}
         </p>
+      );
+    },
+  },
+  {
+    accessorKey: "parent",
+    header: () => <div className="text-left capitalize">Parent</div>,
+    cell: ({ row }) => {
+      const collection = row.original.node;
+
+      return (
+        <div className="font-medium">
+          {collection.collections ? (
+            <Link
+              href={`/admin/collections/${collection.collections.id}`}
+              className="text-center font-medium capitalize px-3 hover:underline"
+            >
+              {collection.collections.label}
+            </Link>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          )}
+        </div>
       );
     },
   },
@@ -90,7 +118,7 @@ const CollectionsColumns: ColumnDef<{
             >
               Edit Collections
             </Link>
-            {/* <DeleteCategoryDialog categoryId={category.id} /> */}
+            <DeleteCollectionDialog collectionId={collection.id} />
           </DropdownMenuContent>
         </DropdownMenu>
       );
