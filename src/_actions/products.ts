@@ -1,35 +1,128 @@
 "use server";
 
 import db from "@/lib/supabase/db";
-import { InsertProducts, products } from "@/lib/supabase/schema";
-import { eq, inArray } from "drizzle-orm";
+import { InsertProducts, productMedias, products } from "@/lib/supabase/schema";
+import { asc, eq, inArray } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 
-type SearchProductsActionProps = {
-  query: string;
-  limit?: number;
-  collections?: string;
-  sort?: string;
+type InsertProductMedias = {
+  productId: string;
+  mediaId: string;
+  priority?: number | null;
 };
 
-export const createProductAction = async (product: InsertProducts) => {
-  createInsertSchema(products).parse(product);
-  const data = await db.insert(products).values(product).returning();
+export const createProductAction = async (
+  product: InsertProducts,
+  additionalImages?: string[],
+) => {
+  // Limpiar los datos antes de validar
+  const cleanedProduct: InsertProducts = {
+    ...product,
+    // Asegurar que rating sea un string válido o usar el valor por defecto
+    rating:
+      product.rating === "" ||
+      product.rating === null ||
+      product.rating === undefined
+        ? "4"
+        : String(product.rating),
+    // Convertir arrays vacíos a null para campos opcionales
+    colors: product.colors && product.colors.length > 0 ? product.colors : null,
+    sizes: product.sizes && product.sizes.length > 0 ? product.sizes : null,
+    materials:
+      product.materials && product.materials.length > 0
+        ? product.materials
+        : null,
+  };
+
+  createInsertSchema(products).parse(cleanedProduct);
+  const data = await db.insert(products).values(cleanedProduct).returning();
+
+  // Guardar imágenes adicionales si existen
+  if (data[0] && additionalImages && additionalImages.length > 0) {
+    const productMediaRecords: InsertProductMedias[] = additionalImages
+      .filter((mediaId) => mediaId && mediaId.trim() !== "")
+      .map((mediaId, index) => ({
+        productId: data[0].id,
+        mediaId,
+        priority: index + 1,
+      }));
+
+    if (productMediaRecords.length > 0) {
+      await db.insert(productMedias).values(productMediaRecords);
+    }
+  }
+
   return data;
 };
 
 export const updateProductAction = async (
   productId: string,
   product: InsertProducts,
+  additionalImages?: string[],
 ) => {
-  createInsertSchema(products).parse(product);
+  // Limpiar los datos antes de validar
+  const cleanedProduct: InsertProducts = {
+    ...product,
+    // Asegurar que rating sea un string válido
+    rating:
+      product.rating === "" ||
+      product.rating === null ||
+      product.rating === undefined
+        ? undefined // No actualizar si está vacío
+        : String(product.rating),
+    // Convertir arrays vacíos a null para campos opcionales
+    colors: product.colors && product.colors.length > 0 ? product.colors : null,
+    sizes: product.sizes && product.sizes.length > 0 ? product.sizes : null,
+    materials:
+      product.materials && product.materials.length > 0
+        ? product.materials
+        : null,
+  };
+
+  // Remover campos undefined para que no se actualicen
+  const updateData = Object.fromEntries(
+    Object.entries(cleanedProduct).filter(([_, v]) => v !== undefined),
+  ) as InsertProducts;
+
+  createInsertSchema(products).parse(updateData);
   const insertedProduct = await db
     .update(products)
-    .set(product)
+    .set(updateData)
     .where(eq(products.id, productId))
     .returning();
 
+  // Actualizar imágenes adicionales: eliminar todas las existentes y crear las nuevas
+  if (insertedProduct[0] && additionalImages !== undefined) {
+    // Eliminar todas las imágenes adicionales existentes
+    await db
+      .delete(productMedias)
+      .where(eq(productMedias.productId, productId));
+
+    // Insertar las nuevas imágenes adicionales
+    if (additionalImages && additionalImages.length > 0) {
+      const productMediaRecords: InsertProductMedias[] = additionalImages
+        .filter((mediaId) => mediaId && mediaId.trim() !== "")
+        .map((mediaId, index) => ({
+          productId,
+          mediaId,
+          priority: index + 1,
+        }));
+
+      if (productMediaRecords.length > 0) {
+        await db.insert(productMedias).values(productMediaRecords);
+      }
+    }
+  }
+
   return insertedProduct;
+};
+
+export const getProductAdditionalImages = async (productId: string) => {
+  return await db
+    .select()
+    .from(productMedias)
+    .where(eq(productMedias.productId, productId))
+    .orderBy(asc(productMedias.priority));
 };
 
 export const getProductsByIds = async (productIds: string[]) => {

@@ -1,12 +1,12 @@
 "use client";
-import { gql } from "@/gql";
-import { useAuth } from "@/providers/AuthProvider";
-import { cn } from "@/lib/utils";
-import { useMutation } from "@urql/next";
-import { useRouter } from "next/navigation";
 import { Icons } from "@/components/layouts/icons";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { gql } from "@/gql";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/providers/AuthProvider";
+import { useMutation } from "@urql/next";
+import { useRouter } from "next/navigation";
 import useWishlistStore from "../useWishlistStore";
 
 type Props = {
@@ -69,14 +69,17 @@ function AddToWishListButton({ productId }: Props) {
   };
   return (
     <Button
-      className="rounded-full p-3"
-      variant="ghost"
+      className="rounded-full p-1 bg-primary-50 justify-center shadow-md"
+      variant="secondary"
+      size="icon"
       onClick={onClickHandler}
     >
       <Icons.heart
         className={cn(
-          "w-4 h-4",
-          wishlist[productId] ? "fill-red-600 " : "fill-none",
+          "w-6 h-6",
+          wishlist[productId]
+            ? "fill-primary stroke-primary"
+            : "fill-none stroke-primary",
         )}
       />
     </Button>

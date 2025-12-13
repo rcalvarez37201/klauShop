@@ -177,6 +177,9 @@ export const products = pgTable(
       .notNull(),
 
     stock: integer("stock").default(8),
+    colors: json("colors").$type<string[]>(),
+    sizes: json("sizes").$type<string[]>(),
+    materials: json("materials").$type<string[]>(),
     collectionId: text("collection_id").references(() => collections.id, {
       onDelete: "set null",
     }),

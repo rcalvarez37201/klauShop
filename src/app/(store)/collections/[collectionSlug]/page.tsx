@@ -9,7 +9,7 @@ import {
   SearchProductsInifiteScroll,
 } from "@/features/search";
 import { gql } from "@/gql";
-import { getClient } from "@/lib/urql";
+import { getServiceClient } from "@/lib/urql-service";
 import { toTitleCase, unslugify } from "@/lib/utils";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -40,6 +40,7 @@ const CollectionRouteQuery = gql(/* GraphQL */ `
     ) {
       edges {
         node {
+          id
           title
           label
           description
@@ -61,32 +62,77 @@ const CollectionRouteQuery = gql(/* GraphQL */ `
   }
 `);
 
+const GetChildCollectionsQuery = gql(/* GraphQL */ `
+  query GetChildCollectionsQuery($parentId: String) {
+    collectionsCollection(filter: { parent_id: { eq: $parentId } }) {
+      edges {
+        node {
+          id
+        }
+      }
+    }
+  }
+`);
+
+// Helper function to recursively get all child collection IDs
+async function getAllChildCollectionIds(
+  collectionId: string,
+  client: ReturnType<typeof getServiceClient>,
+): Promise<string[]> {
+  const childIds: string[] = [];
+
+  const result = await client.query(GetChildCollectionsQuery, {
+    parentId: collectionId,
+  });
+
+  const directChildren =
+    result.data?.collectionsCollection?.edges.map((edge) => edge.node.id) || [];
+
+  childIds.push(...directChildren);
+
+  // Recursively get children of children
+  for (const childId of directChildren) {
+    const grandChildren = await getAllChildCollectionIds(childId, client);
+    childIds.push(...grandChildren);
+  }
+
+  return childIds;
+}
+
 async function CategoryPage({ params }: CategoryPageProps) {
   const { collectionSlug } = params;
 
-  const { data } = await getClient().query(CollectionRouteQuery, {
+  const client = getServiceClient();
+  const collectionResult = await client.query(CollectionRouteQuery, {
     collectionSlug,
   });
 
   if (
-    data === null ||
-    !data?.collectionsCollection?.edges[0].node ||
-    data?.collectionsCollection === null ||
-    data?.collectionsCollection?.edges[0].node.productsCollection === null
+    collectionResult.data === null ||
+    !collectionResult.data?.collectionsCollection?.edges[0]?.node ||
+    collectionResult.data?.collectionsCollection === null ||
+    collectionResult.data?.collectionsCollection?.edges[0].node
+      .productsCollection === null
   )
     return notFound();
 
-  const productsList =
-    data?.collectionsCollection?.edges[0].node.productsCollection;
+  const collection = collectionResult.data.collectionsCollection.edges[0].node;
+  const productsList = collection.productsCollection;
 
   if (!productsList) return notFound();
 
-  const collection = data.collectionsCollection.edges[0].node;
+  // Get all child collection IDs recursively
+  const childCollectionIds = await getAllChildCollectionIds(
+    collection.id,
+    client,
+  );
+
+  // Combine main collection ID with all child collection IDs
+  const allCollectionIds = [collection.id, ...childCollectionIds];
+
   return (
     <Shell className="max-w-screen-2xl mx-auto">
-      <CollectionBanner
-        collectionBannerData={data.collectionsCollection.edges[0].node}
-      />
+      <CollectionBanner collectionBannerData={collection} />
       <SectionHeading
         heading={collection.title}
         description={collection.description}
@@ -104,9 +150,7 @@ async function CategoryPage({ params }: CategoryPageProps) {
       </Suspense>
 
       <Suspense fallback={<SearchProductsGridSkeleton />}>
-        <SearchProductsInifiteScroll
-          collectionId={data.collectionsCollection.edges[0].node.id}
-        />
+        <SearchProductsInifiteScroll collectionIds={allCollectionIds} />
       </Suspense>
     </Shell>
   );

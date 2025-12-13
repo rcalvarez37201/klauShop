@@ -9,7 +9,7 @@ import {
 } from "@/features/products";
 import { getCurrentUser } from "@/features/users/actions";
 import { DocumentType, gql } from "@/gql";
-import { getClient } from "@/lib/urql";
+import { getServiceClient } from "@/lib/urql-service";
 import { cn, keytoUrl } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
@@ -66,7 +66,7 @@ const LandingRouteQuery = gql(/* GraphQL */ `
 export default async function Home() {
   const currentUser = await getCurrentUser();
 
-  const { data } = await getClient().query(LandingRouteQuery, {
+  const { data } = await getServiceClient().query(LandingRouteQuery, {
     user_id: currentUser?.id,
   });
 

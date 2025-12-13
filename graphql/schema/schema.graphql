@@ -1906,6 +1906,9 @@ type products implements Node {
   stock: Int
   collection_id: String
   featured_image_id: String!
+  colors: JSON
+  sizes: JSON
+  materials: JSON
   collections: collections
   medias: medias
   cartsCollection(
@@ -2094,6 +2097,9 @@ input productsInsertInput {
   stock: Int
   collection_id: String
   featured_image_id: String
+  colors: JSON
+  sizes: JSON
+  materials: JSON
 }
 
 type productsInsertResponse {
@@ -2136,6 +2142,9 @@ input productsUpdateInput {
   stock: Int
   collection_id: String
   featured_image_id: String
+  colors: JSON
+  sizes: JSON
+  materials: JSON
 }
 
 type productsUpdateResponse {

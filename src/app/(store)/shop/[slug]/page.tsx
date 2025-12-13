@@ -16,7 +16,7 @@ import {
 } from "@/features/products";
 import { AddToWishListButton } from "@/features/wishlists";
 import { gql } from "@/gql";
-import { getClient } from "@/lib/urql";
+import { getServiceClient } from "@/lib/urql-service";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -41,6 +41,9 @@ const ProductDetailPageQuery = gql(/* GraphQL */ `
           stock
           tags
           totalComments
+          colors
+          sizes
+          materials
           ...ProductImageShowcaseFragment
           commentsCollection(first: 5) {
             edges {
@@ -69,15 +72,24 @@ const ProductDetailPageQuery = gql(/* GraphQL */ `
 `);
 
 async function ProductDetailPage({ params }: Props) {
-  const { data } = await getClient().query(ProductDetailPageQuery, {
-    productSlug: params.slug as string,
+  const { data } = await getServiceClient().query(ProductDetailPageQuery, {
+    productSlug: params.slug,
   });
 
   if (!data || !data.productsCollection || !data.productsCollection.edges)
     return notFound();
 
-  const { id, name, description, price, commentsCollection, totalComments } =
-    data.productsCollection.edges[0].node;
+  const {
+    id,
+    name,
+    description,
+    price,
+    commentsCollection,
+    totalComments,
+    colors,
+    sizes,
+    materials,
+  } = data.productsCollection.edges[0].node;
 
   return (
     <Shell>
@@ -118,7 +130,12 @@ async function ProductDetailPage({ params }: Props) {
 
           <section className="flex mb-8 items-end space-x-5">
             <Suspense>
-              <AddProductToCartForm productId={id} />
+              <AddProductToCartForm
+                productId={id}
+                colors={colors as string[] | null}
+                sizes={sizes as string[] | null}
+                materials={materials as string[] | null}
+              />
             </Suspense>
 
             <BuyNowButton productId={id} />

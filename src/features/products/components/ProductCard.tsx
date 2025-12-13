@@ -7,23 +7,23 @@ import React, { Suspense } from "react";
 import { Icons } from "@/components/layouts/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Rating } from "@/components/ui/rating";
-import { AddToCartButton } from "@/features/carts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddToWishListButton } from "@/features/wishlists";
 import { BadgeType } from "@/lib/supabase/schema";
 
 type CardProps = React.ComponentProps<typeof Card>;
 
+export type ProductCardImage = {
+  key: string;
+  alt?: string | null;
+};
+
 export type ProductCardProps = CardProps & {
   product: DocumentType<typeof ProductCardFragment>;
+  /**
+   * Optional hover image override (useful when the client can't query product_medias via GraphQL).
+   */
+  hoverImage?: ProductCardImage | null;
 };
 
 export const ProductCardFragment = gql(/* GraphQL */ `
@@ -36,10 +36,27 @@ export const ProductCardFragment = gql(/* GraphQL */ `
     badge
     price
     stock
+    colors
+    sizes
+    materials
     featuredImage: medias {
       id
       key
       alt
+    }
+    images: product_mediasCollection(
+      first: 1
+      orderBy: [{ priority: DescNullsLast }]
+    ) {
+      edges {
+        node {
+          media {
+            id
+            key
+            alt
+          }
+        }
+      }
     }
     collections {
       id
@@ -49,88 +66,174 @@ export const ProductCardFragment = gql(/* GraphQL */ `
   }
 `);
 
+// Helper function to normalize JSON values to array
+function normalizeToArray(value: any): string[] {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
 export function ProductCard({
   className,
   product,
+  hoverImage,
   ...props
 }: ProductCardProps) {
-  const { id, name, slug, featuredImage, badge, price } = product;
+  const { name, slug, featuredImage, badge, price, images } = product;
+
+  // Obtener la segunda imagen si existe
+  const secondImage = hoverImage ?? images?.edges?.[0]?.node?.media;
+  const hasMultipleImages = !!secondImage;
+
+  // Normalizar los colores y sizes (pueden venir como array o string JSON)
+  const normalizedColors = normalizeToArray(product.colors);
+  const normalizedSizes = normalizeToArray(product.sizes);
+
+  // Limitar a 6 elementos y calcular el resto
+  const MAX_DISPLAY = 6;
+  const colorsToShow = normalizedColors.slice(0, MAX_DISPLAY);
+  const remainingColors = normalizedColors.length - MAX_DISPLAY;
+  const sizesToShow = normalizedSizes.slice(0, MAX_DISPLAY);
+  const remainingSizes = normalizedSizes.length - MAX_DISPLAY;
 
   return (
     <Card
-      className={cn("w-full border-0 rounded-lg py-3 ", className)}
+      className={cn(
+        "w-full border-0 rounded-lg hover:shadow-xl transition-all duration-300",
+        className,
+      )}
       {...props}
     >
-      <CardContent className="relative p-0 mb-5 overflow-hidden">
-        <Link href={`/shop/${slug}`}>
+      <CardContent className="relative p-0 overflow-hidden rounded-t-lg group">
+        <Link
+          href={`/shop/${slug}`}
+          className="block overflow-hidden rounded-t-lg relative"
+        >
+          {/* Imagen principal */}
           <Image
             src={keytoUrl(featuredImage.key)}
             alt={featuredImage.alt}
             width={400}
             height={400}
-            className="aspect-[1/1] object-cover object-center hover:scale-[1.02] hover:opacity-70 transition-all duration-500"
+            className={cn(
+              "aspect-[1/1] object-cover rounded-t-lg object-center transition-all duration-500",
+              hasMultipleImages &&
+                "group-hover:opacity-0 group-hover:scale-[1.02]",
+            )}
           />
+          {/* Segunda imagen que aparece en hover */}
+          {hasMultipleImages && secondImage && (
+            <Image
+              src={keytoUrl(secondImage.key)}
+              alt={secondImage.alt || featuredImage.alt}
+              width={400}
+              height={400}
+              className="aspect-[1/1] object-cover rounded-t-lg object-center absolute inset-0 opacity-0 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-500"
+            />
+          )}
         </Link>
         {badge && (
-          <Badge className="absolute top-0 left-0" variant={badge as BadgeType}>
-            {badge}
+          <Badge className="absolute top-2 left-2" variant={badge as BadgeType}>
+            {badge === "new_product"
+              ? "Nuevo"
+              : badge === "best_sale"
+                ? "Mejor Venta"
+                : "Destacado"}
           </Badge>
         )}
+        <div className="absolute top-2 right-2">
+          <Suspense
+            fallback={
+              <Button variant="ghost" disabled>
+                <Icons.heart className={"w-6 h-6 fill-none"} />
+              </Button>
+            }
+          >
+            <AddToWishListButton productId={product.id} />
+          </Suspense>
+        </div>
       </CardContent>
 
-      <CardHeader className="p-0 mb-3 md:mb-5">
-        <CardTitle>
-          <Link href={`/shop/${slug}`} className="hover:underline">
-            {name}
-          </Link>
-        </CardTitle>
+      <CardHeader className="p-1 px-4 mb-2 md:mb-3 flex flex-col">
+        <div>
+          <CardTitle>
+            <Link
+              href={`/shop/${slug}`}
+              className="hover:underline text-lg text-primary-800"
+            >
+              {name}
+            </Link>
+          </CardTitle>
 
-        <div className="hidden md:block">
-          <CardDescription className="max-w-[240px] line-clamp-2">
-            {product.description}
-          </CardDescription>
+          <div className="flex justify-between">
+            <div className="">${price}</div>
+
+            <div className="text-sm">
+              {product.stock === 0 ? (
+                <span className="text-red-500 font-semibold">Out of Stock</span>
+              ) : product.stock && product.stock < 5 ? (
+                <span className="text-yellow-600 font-semibold">
+                  Low Stock ({product.stock} left)
+                </span>
+              ) : (
+                <span className="text-green-600">
+                  In Stock ({product.stock})
+                </span>
+              )}
+            </div>
+          </div>
         </div>
-
-        <div className="">${price}</div>
-
-        <div className="text-sm">
-          {product.stock === 0 ? (
-            <span className="text-red-500 font-semibold">Out of Stock</span>
-          ) : product.stock && product.stock < 5 ? (
-            <span className="text-yellow-600 font-semibold">
-              Low Stock ({product.stock} left)
-            </span>
-          ) : (
-            <span className="text-green-600">In Stock ({product.stock})</span>
-          )}
-        </div>
-
-        <div className="hidden md:block">
-          <Rating value={product.rating} precision={0.5} readOnly />
+        <div className="flex justify-between mt-0">
+          <div className="flex items-center gap-x-1 flex-wrap">
+            {colorsToShow.length > 0 &&
+              colorsToShow.map((color) => (
+                <div
+                  key={color}
+                  className="w-4 h-4 rounded-full border border-gray-300"
+                  style={{ backgroundColor: color }}
+                />
+              ))}
+            {remainingColors > 0 && (
+              <span className="text-xs text-gray-500 font-medium">
+                +{remainingColors}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-x-1 flex-wrap">
+            {sizesToShow.length > 0 &&
+              sizesToShow.map((size) => (
+                <span
+                  key={size}
+                  className="text-xs px-1.5 py-0.5 rounded border border-gray-300 bg-gray-50 text-gray-700"
+                >
+                  {size}
+                </span>
+              ))}
+            {remainingSizes > 0 && (
+              <span className="text-xs text-gray-500 font-medium">
+                +{remainingSizes}
+              </span>
+            )}
+          </div>
+          {/* <Suspense
+            fallback={
+              <Button className="rounded-full p-0 h-8 w-8" disabled>
+                <Icons.basket className="h-5 w-5 md:h-4 md:w-4" />
+              </Button>
+            }
+          >
+            <AddToCartButton productId={id} />
+          </Suspense> */}
         </div>
       </CardHeader>
-
-      <CardFooter className="gap-x-2 md:gap-x-5 p-0 ">
-        <Suspense
-          fallback={
-            <Button className="rounded-full p-0 h-8 w-8" disabled>
-              <Icons.basket className="h-5 w-5 md:h-4 md:w-4" />
-            </Button>
-          }
-        >
-          <AddToCartButton productId={id} />
-        </Suspense>
-
-        <Suspense
-          fallback={
-            <Button className="rounded-full p-3" variant="ghost" disabled>
-              <Icons.heart className={"w-4 h-4 fill-none"} />
-            </Button>
-          }
-        >
-          <AddToWishListButton productId={product.id} />
-        </Suspense>
-      </CardFooter>
     </Card>
   );
 }

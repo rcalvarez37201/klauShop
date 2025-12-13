@@ -1,5 +1,6 @@
 import AdminShell from "@/components/admin/AdminShell";
 import { ProductForm } from "@/features/products";
+import { getProductAdditionalImages } from "@/_actions/products";
 import db from "@/lib/supabase/db";
 import { products } from "@/lib/supabase/schema";
 import { eq } from "drizzle-orm";
@@ -20,13 +21,18 @@ async function EditProjectPage({
   });
   if (!product) return notFound();
 
+  const additionalImages = await getProductAdditionalImages(productId);
+
   return (
     <AdminShell
       heading="Add Project"
       description="Input the field below, after that press Add Project button to save the project."
     >
       <Suspense>
-        <ProductForm product={product} />
+        <ProductForm
+          product={product}
+          initialAdditionalImages={additionalImages.map((img) => img.mediaId)}
+        />
       </Suspense>
     </AdminShell>
   );

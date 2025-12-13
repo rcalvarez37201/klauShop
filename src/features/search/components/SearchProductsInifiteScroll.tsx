@@ -6,21 +6,27 @@ import SearchResultPage from "./SearchResultPage";
 
 interface SearchProductsInifiteScrollProps {
   collectionId?: string;
+  collectionIds?: string[];
 }
 
 function SearchProductsInifiteScroll({
   collectionId,
+  collectionIds,
 }: SearchProductsInifiteScrollProps) {
   const searchParmas = useSearchParams();
-  const varaibles = searchParamsVariablesFactory(searchParmas, collectionId);
+  const varaibles = searchParamsVariablesFactory(
+    searchParmas,
+    collectionId,
+    collectionIds,
+  );
 
   const [pageVariables, setPageVariables] = useState([varaibles]);
 
   useEffect(() => {
     setPageVariables([
-      searchParamsVariablesFactory(searchParmas, collectionId),
+      searchParamsVariablesFactory(searchParmas, collectionId, collectionIds),
     ]);
-  }, [searchParmas]);
+  }, [searchParmas, collectionId, collectionIds]);
 
   const loadMoreHandler = (after: string) => {
     setPageVariables([...pageVariables, { ...varaibles, after, first: 8 }]);
@@ -45,11 +51,12 @@ export default SearchProductsInifiteScroll;
 const searchParamsVariablesFactory = (
   searchParams: ReadonlyURLSearchParams,
   collectionId?: string,
+  collectionIds?: string[],
 ) => {
   const priceRange = searchParams.get("price_range");
   const range = priceRange ? priceRange.split("-") : undefined;
   const collections =
-    (JSON.parse(searchParams.get("collections")) as string[]) ?? [];
+    (JSON.parse(searchParams.get("collections") || "null") as string[]) ?? [];
   const sort = searchParams.get("sort") ?? undefined;
   const search = searchParams.get("search") ?? undefined;
 
@@ -84,11 +91,14 @@ const searchParamsVariablesFactory = (
     search: search ? `%${search.trim()}%` : "%%",
     lower: range && range[0] ? `${range[0]}` : undefined,
     upper: range && range[1] ? `${range[1]}` : undefined,
-    collections: collectionId
-      ? [collectionId]
-      : collections && collections.length > 0
-        ? collections
-        : undefined,
+    collections:
+      collectionIds && collectionIds.length > 0
+        ? collectionIds
+        : collectionId
+          ? [collectionId]
+          : collections && collections.length > 0
+            ? collections
+            : undefined,
     orderBy,
     first: 4,
     after: undefined,

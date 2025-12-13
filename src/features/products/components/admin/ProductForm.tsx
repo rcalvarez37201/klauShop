@@ -1,7 +1,9 @@
 "use client";
 
 import { createProductAction, updateProductAction } from "@/_actions/products";
+import { Icons } from "@/components/layouts/icons";
 import { Button, buttonVariants } from "@/components/ui/button";
+import ColorsField from "@/components/ui/colorsField";
 import {
   Form,
   FormControl,
@@ -35,12 +37,21 @@ import { createInsertSchema } from "drizzle-zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Suspense, useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { gql } from "urql";
+import { z } from "zod";
 
 type ProductsFormProps = {
   product?: SelectProducts;
+  initialAdditionalImages?: string[];
 };
+
+type ProductFormData = InsertProducts & { additionalImages?: string[] };
+
+const productFormSchema = createInsertSchema(products).extend({
+  additionalImages: z.array(z.string()).optional(),
+});
+
 export const ProductFormQuery = gql(/* GraphQL */ `
   query ProductFormQuery {
     collectionsCollection(orderBy: [{ label: AscNullsLast }]) {
@@ -55,7 +66,10 @@ export const ProductFormQuery = gql(/* GraphQL */ `
   }
 `);
 
-function ProductFrom({ product }: ProductsFormProps) {
+function ProductFrom({
+  product,
+  initialAdditionalImages = [],
+}: ProductsFormProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const { toast } = useToast();
@@ -64,34 +78,78 @@ function ProductFrom({ product }: ProductsFormProps) {
     query: ProductFormQuery,
   });
 
-  const form = useForm<InsertProducts>({
-    resolver: zodResolver(createInsertSchema(products)),
-    defaultValues: { ...product },
+  const form = useForm<ProductFormData>({
+    resolver: zodResolver(productFormSchema),
+    defaultValues: {
+      ...product,
+      additionalImages:
+        initialAdditionalImages && initialAdditionalImages.length > 0
+          ? initialAdditionalImages
+          : [""],
+    },
   });
 
-  const {
-    register,
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = form;
+  const { register, control, handleSubmit } = form;
 
-  const onSubmit = handleSubmit(async (data: InsertProducts) => {
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "additionalImages",
+  });
+
+  const onSubmit = handleSubmit(async (data) => {
     startTransition(async () => {
       try {
+        // Separar las imágenes adicionales del resto de los datos
+        const { additionalImages = [], ...productData } = data;
+
+        // Limpiar los datos antes de enviarlos
+        const cleanedData: InsertProducts = {
+          ...productData,
+          // Convertir rating vacío a null o valor por defecto
+          rating:
+            productData.rating === "" ||
+            productData.rating === null ||
+            productData.rating === undefined
+              ? "4"
+              : String(productData.rating),
+          // Asegurar que los arrays opcionales sean null si están vacíos
+          colors:
+            productData.colors && productData.colors.length > 0
+              ? productData.colors
+              : null,
+          sizes:
+            productData.sizes && productData.sizes.length > 0
+              ? productData.sizes
+              : null,
+          materials:
+            productData.materials && productData.materials.length > 0
+              ? productData.materials
+              : null,
+        };
+
+        // Filtrar imágenes adicionales vacías
+        const filteredImages = (additionalImages || []).filter(
+          (img) => img && typeof img === "string" && img.trim() !== "",
+        );
+
         product
-          ? await updateProductAction(product.id, data)
-          : await createProductAction(data);
+          ? await updateProductAction(product.id, cleanedData, filteredImages)
+          : await createProductAction(cleanedData, filteredImages);
 
         router.push("/admin/products");
         router.refresh();
 
         toast({
           title: `Product is ${product ? "updated" : "created"}.`,
-          description: `${data.name}`,
+          description: `${productData.name}`,
         });
       } catch (err) {
-        // console.log("unexpected Error Occured")
+        console.error("Error creating/updating product:", err);
+        toast({
+          title: "Error",
+          description: "An error occurred while saving the product.",
+          variant: "destructive",
+        });
       }
     });
   });
@@ -205,24 +263,81 @@ function ProductFrom({ product }: ProductsFormProps) {
 
           <BadgeSelectField name="badge" label={""} />
 
-          <FormItem>
-            <FormLabel className="text-sm">Rating*</FormLabel>
-            <FormControl>
-              <Input
-                defaultValue={product?.rating}
-                aria-invalid={!!form.formState.errors.rating}
-                placeholder="Rating (0-5)."
-                {...register("rating")}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+          <FormField
+            control={control}
+            name="rating"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm">Rating*</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="5"
+                    placeholder="Rating (0-5)"
+                    {...field}
+                    value={field.value || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      field.onChange(value === "" ? "4" : value);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Rating del producto (0-5). Por defecto: 4
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormItem>
             <FormLabel className="text-sm">Tags</FormLabel>
             <FormControl>
               <TagsField name={"tags"} defaultValue={product?.tags || []} />
             </FormControl>
+            <FormMessage />
+          </FormItem>
+
+          <FormItem>
+            <FormLabel className="text-sm">Colors</FormLabel>
+            <FormControl>
+              <ColorsField
+                name={"colors"}
+                defaultValue={product?.colors || []}
+              />
+            </FormControl>
+            <FormDescription>
+              Agrega colores disponibles para este producto en formato
+              hexadecimal
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+
+          <FormItem>
+            <FormLabel className="text-sm">Sizes</FormLabel>
+            <FormControl>
+              <TagsField name={"sizes"} defaultValue={product?.sizes || []} />
+            </FormControl>
+            <FormDescription>
+              Agrega las tallas disponibles para este producto (ej: S, M, L, XL)
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+
+          <FormItem>
+            <FormLabel className="text-sm">Materials</FormLabel>
+            <FormControl>
+              <TagsField
+                name={"materials"}
+                defaultValue={product?.materials || []}
+              />
+            </FormControl>
+            <FormDescription>
+              Agrega los materiales disponibles para este producto (ej: Algodón,
+              Poliéster)
+            </FormDescription>
             <FormMessage />
           </FormItem>
 
@@ -278,6 +393,58 @@ function ProductFrom({ product }: ProductsFormProps) {
               </FormItem>
             )}
           />
+
+          <FormItem>
+            <FormLabel className="text-sm">Additional Images</FormLabel>
+            <div className="flex flex-col gap-y-3">
+              {fields.map((field, index) => (
+                <div key={field.id} className="flex items-center gap-x-2">
+                  <FormField
+                    control={control}
+                    name={`additionalImages.${index}`}
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormControl>
+                          <Suspense>
+                            <ImageDialog
+                              defaultValue={field.value || undefined}
+                              onChange={field.onChange}
+                              value={field.value || undefined}
+                            />
+                          </Suspense>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {fields.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => remove(index)}
+                      className="flex-shrink-0"
+                    >
+                      <Icons.close className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => append("")}
+                className="w-full"
+              >
+                <Icons.add className="h-4 w-4 mr-2" />
+                Add Another Image
+              </Button>
+            </div>
+            <FormDescription>
+              Add additional images for the product. The first image will be
+              shown on hover in product cards.
+            </FormDescription>
+          </FormItem>
         </div>
 
         <div className="py-8 flex gap-x-5 items-center">

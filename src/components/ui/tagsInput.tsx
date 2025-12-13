@@ -1,11 +1,11 @@
 // TagsInput.tsx
-import React, { ChangeEvent, KeyboardEvent, useState, FC } from "react";
-import { Input } from "./input";
-import { Badge } from "./badge";
+import { ChangeEvent, FC, KeyboardEvent, useState } from "react";
 import { Icons } from "../layouts/icons";
+import { Badge } from "./badge";
+import { Input } from "./input";
 
 interface TagsInputProps {
-  tags: string[];
+  tags?: string[] | null;
   setTags: (newTags: string[]) => void;
   onBlur: () => void;
   placeholder?: string;
@@ -19,20 +19,23 @@ const TagsInput: FC<TagsInputProps> = ({
 }) => {
   const [input, setInput] = useState<string>("");
 
+  // Normalize tags to always be an array
+  const normalizedTags = tags && Array.isArray(tags) ? tags : [];
+
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
   };
 
   const addTag = () => {
-    if (input && !tags.includes(input)) {
+    if (input && !normalizedTags.includes(input)) {
       // Prevent adding duplicates and empty tags
-      setTags([...tags, input]);
+      setTags([...normalizedTags, input]);
       setInput(""); // Clear input field after adding
     }
   };
 
   const removeTag = (indexToRemove: number) => {
-    setTags(tags.filter((_, index) => index !== indexToRemove));
+    setTags(normalizedTags.filter((_, index) => index !== indexToRemove));
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -49,7 +52,7 @@ const TagsInput: FC<TagsInputProps> = ({
 
   return (
     <div className="relative flex flex-wrap items-center border border-black p-2 gap-x-3 gap-y-4">
-      {tags.map((tag, index) => (
+      {normalizedTags.map((tag, index) => (
         <Badge key={index} className="rounded-full">
           {tag}
           <button

@@ -18,7 +18,7 @@ export const TagsField: FC<TagsFieldProps> = ({ name, defaultValue }) => {
       defaultValue={defaultValue || []}
       render={({ field: { onChange, onBlur, value } }) => (
         <TagsInput
-          tags={value} // Pass the current value of tags
+          tags={value || []} // Normalize null/undefined to empty array
           setTags={onChange} // Pass the method to update the tags
           onBlur={onBlur} // Pass the onBlur method
         />

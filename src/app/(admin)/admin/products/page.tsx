@@ -3,7 +3,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { DataTableSkeleton } from "@/features/cms";
 import { ProductsColumns, ProductsDataTable } from "@/features/products";
 import { gql } from "@/gql";
-import { getClient } from "@/lib/urql";
+import { getServiceClient } from "@/lib/urql-service";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -29,7 +29,7 @@ async function ProductsPage({ searchParams }: AdminProjectsPageProps) {
     }
   `);
 
-  const { data } = await getClient().query(AdminProductsPageQuery, {});
+  const { data } = await getServiceClient().query(AdminProductsPageQuery, {});
 
   if (!data) return notFound();
 

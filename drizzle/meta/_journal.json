@@ -15,6 +15,13 @@
       "when": 1765622760965,
       "tag": "0001_icy_stellaris",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1765660235449,
+      "tag": "0002_lumpy_forgotten_one",
+      "breakpoints": true
     }
   ]
 }

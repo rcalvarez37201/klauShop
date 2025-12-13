@@ -13,15 +13,26 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
+import { ColorPicker } from "@/features/products/components/ColorPicker";
+import { MaterialSelector } from "@/features/products/components/MaterialSelector";
+import { SizeSelector } from "@/features/products/components/SizeSelector";
 import { useAuth } from "@/providers/AuthProvider";
 import useCartActions from "../hooks/useCartActions";
 import { AddProductCartData, AddProductToCartSchema } from "../validations";
 
 interface AddProductToCartFormProps {
   productId: string;
+  colors?: string[] | null;
+  sizes?: string[] | null;
+  materials?: string[] | null;
 }
 
-function AddProductToCartForm({ productId }: AddProductToCartFormProps) {
+function AddProductToCartForm({
+  productId,
+  colors,
+  sizes,
+  materials,
+}: AddProductToCartFormProps) {
   const { user } = useAuth();
   const { addProductToCart } = useCartActions(user, productId);
   const maxQuantity = 8;
@@ -30,6 +41,9 @@ function AddProductToCartForm({ productId }: AddProductToCartFormProps) {
     resolver: zodResolver(AddProductToCartSchema),
     defaultValues: {
       quantity: 1,
+      color: undefined,
+      size: undefined,
+      material: undefined,
     },
   });
 
@@ -48,7 +62,64 @@ function AddProductToCartForm({ productId }: AddProductToCartFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {colors && colors.length > 0 && (
+          <FormField
+            control={form.control}
+            name="color"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <ColorPicker
+                    colors={colors}
+                    selectedColor={field.value || undefined}
+                    onColorSelect={field.onChange}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        {sizes && sizes.length > 0 && (
+          <FormField
+            control={form.control}
+            name="size"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <SizeSelector
+                    sizes={sizes}
+                    selectedSize={field.value || undefined}
+                    onSizeSelect={field.onChange}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        {materials && materials.length > 0 && (
+          <FormField
+            control={form.control}
+            name="material"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <MaterialSelector
+                    materials={materials}
+                    selectedMaterial={field.value || undefined}
+                    onMaterialSelect={field.onChange}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
         <FormField
           control={form.control}
           name="quantity"
