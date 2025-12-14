@@ -62,7 +62,7 @@ function AddProductToCartForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
         {colors && colors.length > 0 && (
           <FormField
             control={form.control}
@@ -120,24 +120,26 @@ function AddProductToCartForm({
           />
         )}
 
-        <FormField
-          control={form.control}
-          name="quantity"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Quantity</FormLabel>
-              <FormControl>
-                <QuantityInput
-                  {...field}
-                  addOneHandler={addOne}
-                  minusOneHandler={minusOne}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit">Add to Cart</Button>
+        <div className="flex items-end gap-x-2">
+          <FormField
+            control={form.control}
+            name="quantity"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Quantity</FormLabel>
+                <FormControl>
+                  <QuantityInput
+                    {...field}
+                    addOneHandler={addOne}
+                    minusOneHandler={minusOne}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit">Add to Cart</Button>
+        </div>
       </form>
     </Form>
   );

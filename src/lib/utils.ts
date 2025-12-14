@@ -94,3 +94,23 @@ export function getNameInitials(fullName: string): string {
 
   return initials;
 }
+
+/**
+ * Removes HTML tags from a string and returns plain text
+ * Useful for displaying rich text content in places where only plain text is needed
+ * Works both on server and client side
+ */
+export function stripHtml(html: string | null | undefined): string {
+  if (!html) return "";
+  // Simple regex to remove HTML tags and decode common entities
+  return html
+    .replace(/<[^>]*>/g, "") // Remove HTML tags
+    .replace(/&nbsp;/g, " ") // Replace &nbsp; with space
+    .replace(/&amp;/g, "&") // Decode &amp;
+    .replace(/&lt;/g, "<") // Decode &lt;
+    .replace(/&gt;/g, ">") // Decode &gt;
+    .replace(/&quot;/g, '"') // Decode &quot;
+    .replace(/&#39;/g, "'") // Decode &#39;
+    .replace(/\s+/g, " ") // Replace multiple spaces with single space
+    .trim();
+}

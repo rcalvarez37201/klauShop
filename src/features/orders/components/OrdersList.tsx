@@ -3,7 +3,7 @@ import { DocumentType, gql } from "@/gql";
 import React from "react";
 import { Card, CardContent, CardHeader } from "../../../components/ui/card";
 import Image from "next/image";
-import { cn, formatPrice, keytoUrl } from "@/lib/utils";
+import { cn, formatPrice, keytoUrl, stripHtml } from "@/lib/utils";
 import dayjs from "dayjs";
 import Link from "next/link";
 import { Button, buttonVariants } from "../../../components/ui/button";
@@ -96,7 +96,7 @@ function OrdersList({ orders }: OrdersListProps) {
                           {product.name}
                         </Link>
                         <p className="line-clamp-2 tracking-tighter leading-tight">
-                          {product.description}
+                          {stripHtml(product.description)}
                         </p>
                       </div>
                     </div>

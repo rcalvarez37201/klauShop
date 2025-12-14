@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import TagsField from "@/components/ui/tagsField";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { useToast } from "@/components/ui/use-toast";
 import { BadgeSelectField } from "@/features/cms";
 import { ImageDialog } from "@/features/medias";
@@ -193,18 +194,28 @@ function ProductFrom({
             <FormMessage />
           </FormItem>
 
-          <FormItem>
-            <FormLabel className="text-sm">Description*</FormLabel>
-            <FormControl>
-              <Input
-                defaultValue={product?.description || ""}
-                aria-invalid={!!form.formState.errors.description}
-                placeholder="Type a short description for the product.."
-                {...register("description")}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm">Description*</FormLabel>
+                <FormControl>
+                  <RichTextEditor
+                    value={field.value || ""}
+                    onChange={field.onChange}
+                    placeholder="Escribe la descripción del producto..."
+                    error={!!form.formState.errors.description}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Escribe una descripción detallada del producto con formato
+                  enriquecido
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}

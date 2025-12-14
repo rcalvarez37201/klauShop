@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import { keytoUrl } from "@/lib/utils";
+import { keytoUrl, stripHtml } from "@/lib/utils";
 import { UseQueryExecute } from "@urql/next";
 import Link from "next/link";
 import { Icons } from "../../../components/layouts/icons";
@@ -73,7 +73,7 @@ function CartItemCard({
         </CardTitle>
 
         <CardDescription className="grow line-clamp-2">
-          {product.description}
+          {stripHtml(product.description)}
         </CardDescription>
 
         <QuantityInput

@@ -1,10 +1,10 @@
 "use client";
+import { DocumentType, gql } from "@/gql";
 import React, { useState } from "react";
-import { gql, DocumentType } from "@/gql";
 
+import { keytoUrl } from "@/lib/utils";
 import Image from "next/image";
 import { Icons } from "../../../components/layouts/icons";
-import { keytoUrl } from "@/lib/utils";
 
 type ProductImageShowcaseProps = React.HTMLAttributes<HTMLDivElement> & {
   data: DocumentType<typeof ProductImageShowcaseFragment>;
@@ -54,7 +54,7 @@ function ProductImageShowcase({ data }: ProductImageShowcaseProps) {
     }
   };
   return (
-    <section className="flex md:flex-row flex-col items-center gap-x-8 gap-y-5">
+    <section className="flex md:flex-row flex-col items-start gap-x-8 gap-y-5">
       {/* Active Image Display */}
       <div className="w-full max-w-2xl order-1 md:order-3 grow">
         {allImages[activeImageIndex] && (
@@ -70,7 +70,7 @@ function ProductImageShowcase({ data }: ProductImageShowcaseProps) {
 
       {/* Thumbnails */}
       <div className="relative order-2 overflow-x-auto w-full md:w-[100px] h-full">
-        <div className="flex overflow-x-auto gap-x-5 gapy-y-5 order-2 justify-center flex-row md:flex-col">
+        <div className="flex overflow-x-auto gap-x-5 gapy-y-5 order-2 justify-start flex-row md:flex-col">
           {allImages.map((image, index) => (
             <Image
               key={image.id}
