@@ -6,6 +6,8 @@ import {
 } from "@/features/search";
 import { Suspense } from "react";
 
+export const dynamic = "force-dynamic";
+
 interface ProductsPageProps {
   searchParams: {
     [key: string]: string | string[] | undefined;
