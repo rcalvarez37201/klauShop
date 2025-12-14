@@ -1,8 +1,5 @@
 import { env } from "@/env.mjs";
 import { stripe } from "@/lib/stripe";
-import db from "@/lib/supabase/db";
-import { PaymentStatus, address, orders } from "@/lib/supabase/schema";
-import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
@@ -42,45 +39,9 @@ export async function POST(request: NextRequest) {
           const checkoutSession = event.data.object as Stripe.Checkout.Session;
 
           if (checkoutSession.status === "complete") {
-            const customer_details = checkoutSession.customer_details;
-
-            const insertedAddress = await db
-              .insert(address)
-              .values({
-                city: customer_details.address.city,
-                country: customer_details.address.country,
-                line1: customer_details.address.line1,
-                line2: customer_details.address.line2,
-                postal_code: customer_details.address.postal_code,
-                state: customer_details.address.state,
-              })
-              .returning({ id: address.id });
-
-            const updatedOrder = await db
-              .update(orders)
-              .set({
-                amount: `${checkoutSession.amount_total / 100}`,
-                email: customer_details!.email,
-                name: customer_details!.name,
-                order_status: "PREPARING",
-                stripe_payment_intent_id:
-                  checkoutSession.payment_intent.toString(),
-                payment_status: checkoutSession.payment_status as PaymentStatus,
-                payment_method: checkoutSession.payment_method_types[0],
-              })
-              .where(eq(orders.id, checkoutSession.client_reference_id))
-              .returning();
+            // TODO: Handle successful checkout session
           } else {
-            const insertedOrder = await db
-              .update(orders)
-              .set({
-                order_status: "canceled",
-                stripe_payment_intent_id:
-                  checkoutSession.payment_intent.toString(),
-                payment_status: checkoutSession.payment_status as PaymentStatus,
-              })
-              .where(eq(orders.id, checkoutSession.client_reference_id))
-              .returning();
+            // TODO: Handle cancelled/failed checkout session
           }
           break;
         default:
