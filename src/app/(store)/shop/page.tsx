@@ -19,7 +19,7 @@ async function ProductsPage({}: ProductsPageProps) {
   // const collectionsData = await listCollectionsAction();
 
   return (
-    <Shell>
+    <Shell className="max-w-screen-2xl mx-auto">
       <Header heading="Shop Now" />
 
       {/* <Suspense
