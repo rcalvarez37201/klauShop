@@ -85,6 +85,8 @@ const documents = {
     types.ProductSliderQueryDocument,
   "\n  query RecomendationProductsQuery($first: Int!) {\n    recommendations: productsCollection(first: $first) {\n      edges {\n        node {\n          id\n          ...ProductCardFragment\n        }\n      }\n    }\n  }\n":
     types.RecomendationProductsQueryDocument,
+  "\n  query WishlistProductsQuery($user_id: UUID) {\n    wishlistCollection(filter: { user_id: { eq: $user_id } }) {\n      edges {\n        node {\n          product_id\n          products {\n            id\n            ...ProductCardFragment\n          }\n        }\n      }\n    }\n  }\n":
+    types.WishlistProductsQueryDocument,
   "\n  query ProductFormQuery {\n    collectionsCollection(orderBy: [{ label: AscNullsLast }]) {\n      __typename\n      edges {\n        node {\n          id\n          label\n        }\n      }\n    }\n  }\n":
     types.ProductFormQueryDocument,
   "\n  fragment ProductColumnFragment on products {\n    id\n    name\n    description\n    rating\n    slug\n    badge\n    price\n    stock\n    badge\n    featured\n    featuredImage: medias {\n      id\n      key\n      alt\n    }\n    collections {\n      id\n      label\n      slug\n    }\n  }\n":
@@ -327,6 +329,12 @@ export function gql(
 export function gql(
   source: "\n  query RecomendationProductsQuery($first: Int!) {\n    recommendations: productsCollection(first: $first) {\n      edges {\n        node {\n          id\n          ...ProductCardFragment\n        }\n      }\n    }\n  }\n",
 ): (typeof documents)["\n  query RecomendationProductsQuery($first: Int!) {\n    recommendations: productsCollection(first: $first) {\n      edges {\n        node {\n          id\n          ...ProductCardFragment\n        }\n      }\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: "\n  query WishlistProductsQuery($user_id: UUID) {\n    wishlistCollection(filter: { user_id: { eq: $user_id } }) {\n      edges {\n        node {\n          product_id\n          products {\n            id\n            ...ProductCardFragment\n          }\n        }\n      }\n    }\n  }\n",
+): (typeof documents)["\n  query WishlistProductsQuery($user_id: UUID) {\n    wishlistCollection(filter: { user_id: { eq: $user_id } }) {\n      edges {\n        node {\n          product_id\n          products {\n            id\n            ...ProductCardFragment\n          }\n        }\n      }\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

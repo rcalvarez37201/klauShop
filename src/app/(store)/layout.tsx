@@ -1,7 +1,7 @@
-import { CartSheet } from "@/features/carts";
+import CategoriesSubNav from "@/components/layouts/CategoriesSubNav";
 import MainFooter from "@/components/layouts/MainFooter";
 import Navbar from "@/components/layouts/MainNavbar";
-import CategoriesSubNav from "@/components/layouts/CategoriesSubNav";
+import { CartSheet } from "@/features/carts";
 import { ReactNode } from "react";
 
 type Props = { children: ReactNode };
@@ -11,7 +11,9 @@ async function StoreLayout({ children }: Props) {
     <>
       <Navbar />
       <CategoriesSubNav />
-      <main className="pt-[50px] md:pt-[114px]">{children}</main>
+      <main className="pt-[50px] md:pt-[114px] min-h-screen max-w-screen-2xl mx-auto">
+        {children}
+      </main>
       <CartSheet />
       <MainFooter />
     </>

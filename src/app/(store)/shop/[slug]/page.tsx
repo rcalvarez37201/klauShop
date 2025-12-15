@@ -82,7 +82,7 @@ async function ProductDetailPage({ params }: Props) {
     data.productsCollection.edges[0].node;
 
   return (
-    <Shell className="max-w-screen-2xl mx-auto">
+    <Shell>
       <div className="grid grid-cols-12 gap-x-8">
         <div className="space-y-8 relative col-span-12 md:col-span-7">
           <ProductImageShowcase data={data.productsCollection.edges[0].node} />

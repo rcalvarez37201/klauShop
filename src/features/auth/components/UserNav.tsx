@@ -118,7 +118,7 @@ function UserNav() {
       ) : (
         <Link href="/sign-in" className="flex items-center text-foreground">
           <Icons.user className="h-5 w-5 mr-2 text-primary" />
-          <p className="text-sm text-primary">Sign in</p>
+          <p className="text-sm text-primary hidden sm:inline-block">Sign in</p>
         </Link>
       )}
     </>

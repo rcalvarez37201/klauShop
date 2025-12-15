@@ -1,10 +1,10 @@
 import { Shell } from "@/components/layouts/Shell";
 import {
-  RecommendationProducts,
-  RecommendationProductsSkeleton,
+  WishlistProducts,
+  WishlistProductsSkeleton,
 } from "@/features/products";
 import Link from "next/link";
-import React, { Suspense } from "react";
+import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 
@@ -17,13 +17,13 @@ function WishListPage({}: Props) {
         <h1 className="text-3xl">Your Wishlist</h1>
         <Link href="/shop">Continue shopping</Link>
       </section>
-      {/* 
+      {/*
       <Suspense fallback={<CartSectionSkeleton />}>
         <CartSection />
       </Suspense> */}
 
-      <Suspense fallback={<RecommendationProductsSkeleton />}>
-        <RecommendationProducts />
+      <Suspense fallback={<WishlistProductsSkeleton />}>
+        <WishlistProducts />
       </Suspense>
     </Shell>
   );

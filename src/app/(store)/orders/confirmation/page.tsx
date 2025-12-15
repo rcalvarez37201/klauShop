@@ -18,7 +18,7 @@ export default function OrderConfirmationPage({
 
   if (!orderId || !orderNumber) {
     return (
-      <Shell className="max-w-2xl mx-auto py-12">
+      <Shell>
         <Card>
           <CardContent className="pt-6">
             <p className="text-center text-muted-foreground">

@@ -10,11 +10,13 @@ export {
   ProductSliderQuery,
   ProductSliderSkeleton,
 } from "./ProductSlider";
+export { ProductStockAndFormWrapper } from "./ProductStockAndFormWrapper";
+export { ProductStockDisplay } from "./ProductStockDisplay";
 export { default as RecommendationProducts } from "./RecommendationProducts";
 export { default as RecommendationProductsSkeleton } from "./RecommendationProductsSkeleton";
 export { SizeSelector } from "./SizeSelector";
-export { ProductStockDisplay } from "./ProductStockDisplay";
-export { ProductStockAndFormWrapper } from "./ProductStockAndFormWrapper";
+export { default as WishlistProducts } from "./WishlistProducts";
+export { default as WishlistProductsSkeleton } from "./WishlistProductsSkeleton";
 export * from "./admin/ProductForm";
 export { default as ProductForm } from "./admin/ProductForm";
 export { default as ProductsColumns } from "./admin/ProductsColumns";

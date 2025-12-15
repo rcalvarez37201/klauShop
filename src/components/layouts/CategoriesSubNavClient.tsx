@@ -134,6 +134,16 @@ function CategoriesSubNavClient({ categories }: CategoriesSubNavClientProps) {
       <div className="max-w-screen-2xl mx-auto px-4 flex justify-center">
         <NavigationMenu value={activeMenu || undefined}>
           <NavigationMenuList>
+            <NavigationMenuItem>
+              <Link
+                href="/shop"
+                className={`inline-flex h-10 w-max items-center justify-center px-4 py-2 text-sm font-medium text-primary transition-colors border-b-[3px] ${
+                  pathname === "/shop" ? "border-accent" : "border-transparent"
+                } hover:border-accent focus:outline-none`}
+              >
+                Ver todos
+              </Link>
+            </NavigationMenuItem>
             {categoryTree.map((category) => {
               const isActive = pathname === `/collections/${category.slug}`;
               const isHovered = activeMenu === category.id;

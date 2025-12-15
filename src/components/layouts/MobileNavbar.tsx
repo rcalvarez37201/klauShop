@@ -1,9 +1,10 @@
+import UserNav from "@/features/auth/components/UserNav";
 import { Suspense } from "react";
+import CartLink from "../../features/carts/components/CartLink";
 import CartNav from "../../features/carts/components/CartNav";
 import Branding from "./Branding";
 import MobileSearchInput from "./MobileSearchInput";
 import { SideMenu } from "./SideMenu";
-import CartLink from "../../features/carts/components/CartLink";
 
 type Props = { adminLayout: boolean };
 
@@ -16,9 +17,14 @@ function MobileNavbar({ adminLayout }: Props) {
       </div>
 
       <Branding />
-      <Suspense fallback={<CartLink productCount={0} />}>
-        {!adminLayout && <CartNav />}
-      </Suspense>
+      <div className="flex gap-x-2 items-center">
+        <Suspense>
+          <UserNav />
+        </Suspense>
+        <Suspense fallback={<CartLink productCount={0} />}>
+          {!adminLayout && <CartNav />}
+        </Suspense>
+      </div>
     </div>
   );
 }

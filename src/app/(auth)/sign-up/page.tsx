@@ -1,4 +1,3 @@
-import { type Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -10,12 +9,11 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import { getPageMetadata, siteConfig } from "@/config/site";
 import { SignupForm } from "@/features/auth";
 
 export default function SignUpPage() {
   return (
-    <section className="w-full max-w-md">
+    <section className="w-full max-w-md px-3 sm:px-0">
       <Card className="border-0 border-t-4 border-accent">
         <CardHeader className="space-y-6 text-center">
           <div className="flex flex-col items-center space-y-4">

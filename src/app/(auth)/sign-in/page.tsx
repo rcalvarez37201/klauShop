@@ -21,7 +21,7 @@ export const metadata: Metadata = getPageMetadata(
 
 export default function SignInPage() {
   return (
-    <section className="w-full max-w-md">
+    <section className="w-full max-w-md px-3 sm:px-0">
       <Card className="border-0 border-t-4 border-accent">
         <CardHeader className="space-y-6 text-center">
           <div className="flex flex-col items-center space-y-4">

@@ -104,12 +104,12 @@ export default async function Home() {
         {/* <CollectionGrid /> */}
 
         <BannerCollectionCard
-          imageSrc="https://bhwyagfoyylgrdgyngrm.supabase.co/storage/v1/object/public/klaushop/public/banner-swimwear.jpg"
-          title="Menos es Más. Verano."
-          description="Creemos que el estilo de playa no debe ser complicado. Diseños atemporales, tejidos sostenibles y cortes que realzan tu belleza natural, hechos para durar más allá de una temporada."
-          ctatext="Ver Colección Playa"
-          collectionHref="/collections/swimwear"
-          imageLeft={true}
+          imageSrc="https://bhwyagfoyylgrdgyngrm.supabase.co/storage/v1/object/public/klaushop/public/banner-cupboard.jpg"
+          title="Esenciales."
+          description="Simplifica tu día a día con nuestro armario cápsula. Prendas versátiles de alta calidad que combinan entre sí sin esfuerzo, permitiéndote vestirte con elegancia y consciencia en minutos."
+          ctatext="Explorar Ropa"
+          collectionHref="/collections/cupboard"
+          imageLeft={false}
         />
 
         {data.sliderProducts &&
@@ -124,20 +124,20 @@ export default async function Home() {
         ) : null}
 
         <BannerCollectionCard
-          imageSrc="https://bhwyagfoyylgrdgyngrm.supabase.co/storage/v1/object/public/klaushop/public/banner-cupboard.jpg"
-          title="Menos es Más. Esenciales."
-          description="Simplifica tu día a día con nuestro armario cápsula. Prendas versátiles de alta calidad que combinan entre sí sin esfuerzo, permitiéndote vestirte con elegancia y consciencia en minutos."
-          ctatext="Explorar Ropa"
-          collectionHref="/collections/cupboard"
-          imageLeft={false}
-        />
-        <DifferentFeatureCards />
-        <BannerCollectionCard
           imageSrc="https://bhwyagfoyylgrdgyngrm.supabase.co/storage/v1/object/public/klaushop/public/banner-skin-care.jpg"
-          title="Menos es Más. Piel."
+          title="Piel."
           description="Creemos en una belleza honesta. Fórmulas botánicas y eficaces con pocos ingredientes, sin tóxicos, para devolverle a tu piel su equilibrio natural y resplandor."
           ctatext="Cuidar mi Piel"
           collectionHref="/collections/cupboard"
+          imageLeft={true}
+        />
+        <DifferentFeatureCards />
+        <BannerCollectionCard
+          imageSrc="https://bhwyagfoyylgrdgyngrm.supabase.co/storage/v1/object/public/klaushop/public/banner-swimwear.jpg"
+          title="Verano."
+          description="Creemos que el estilo de playa no debe ser complicado. Diseños atemporales, tejidos sostenibles y cortes que realzan tu belleza natural, hechos para durar más allá de una temporada."
+          ctatext="Ver Colección Playa"
+          collectionHref="/collections/swimwear"
           imageLeft={true}
         />
       </Shell>
