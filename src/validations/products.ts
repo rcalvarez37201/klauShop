@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 export enum SortEnum {
-  BEST_MATCH = "Best Match",
-  PRICE_LOW_TO_HIGH = "Price: low to high",
-  PRICE_HIGH_TO_LOW = "Price: high to low",
-  NEWEST = "Newest",
-  NAME_ASCE = "Name",
+  BEST_MATCH = "Mejor coincidencia",
+  PRICE_LOW_TO_HIGH = "Precio: de menor a mayor",
+  PRICE_HIGH_TO_LOW = "Precio: de mayor a menor",
+  NEWEST = "Más reciente",
+  NAME_ASCE = "Nombre: de A a Z",
 }
 
 export const SearchProductActionSchema = z.object({

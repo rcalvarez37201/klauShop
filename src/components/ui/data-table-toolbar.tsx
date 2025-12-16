@@ -1,9 +1,9 @@
 "use client";
 
 import { Table } from "@tanstack/react-table";
-import { Input } from "./input";
-import { Button } from "./button";
 import { Icons } from "../layouts/icons";
+import { Button } from "./button";
+import { Input } from "./input";
 
 // import { DataTableViewOptions } from "@/app/examples/tasks/components/data-table-view-options"
 
@@ -23,7 +23,7 @@ export function DataTableToolbar<TData>({
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-2">
         <Input
-          placeholder="Filter tasks..."
+          placeholder="Filtrar productos..."
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("title")?.setFilterValue(event.target.value)
@@ -50,7 +50,7 @@ export function DataTableToolbar<TData>({
             onClick={() => table.resetColumnFilters()}
             className="h-8 px-2 lg:px-3"
           >
-            Reset
+            Limpiar filtros
             <Icons.close className="ml-2 h-4 w-4" />
           </Button>
         )}

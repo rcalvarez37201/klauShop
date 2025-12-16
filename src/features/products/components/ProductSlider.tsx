@@ -39,7 +39,11 @@ export function ProductSlider({
   title = "Productos Destacados",
   className,
 }: ProductSliderProps) {
-  if (!products || products.length === 0) {
+  const inStockProducts = (products ?? []).filter(
+    ({ node }) => (node.stock ?? 0) > 0,
+  );
+
+  if (inStockProducts.length === 0) {
     return null;
   }
 
@@ -61,7 +65,7 @@ export function ProductSlider({
         className="w-full"
       >
         <CarouselContent className="-ml-2 md:-ml-4">
-          {products.map(({ node }) => (
+          {inStockProducts.map(({ node }) => (
             <CarouselItem
               key={`product-slider-${node.id}`}
               className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 pb-8"

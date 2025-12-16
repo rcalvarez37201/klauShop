@@ -79,8 +79,12 @@ async function ProductDetailPage({ params }: Props) {
   if (!data || !data.productsCollection || !data.productsCollection.edges)
     return notFound();
 
+  const productNode = data.productsCollection.edges[0]?.node;
+  if (!productNode) return notFound();
+  if (!productNode.stock || productNode.stock <= 0) return notFound();
+
   const { id, name, description, price, discount, colors, sizes, materials } =
-    data.productsCollection.edges[0].node;
+    productNode;
 
   // Calcular el precio con descuento
   const discountValue = discount ? parseFloat(discount.toString()) : 0;
@@ -94,7 +98,7 @@ async function ProductDetailPage({ params }: Props) {
     <Shell className="max-w-screen-2xl mx-auto">
       <div className="grid grid-cols-12 gap-x-8">
         <div className="space-y-8 relative col-span-12 md:col-span-7">
-          <ProductImageShowcase data={data.productsCollection.edges[0].node} />
+          <ProductImageShowcase data={productNode} />
         </div>
 
         <div className="col-span-12 md:col-span-5">
@@ -129,7 +133,7 @@ async function ProductDetailPage({ params }: Props) {
           <Suspense>
             <ProductStockAndFormWrapper
               productId={id}
-              totalStock={data.productsCollection.edges[0].node.stock || 0}
+              totalStock={productNode.stock || 0}
               colors={colors as string[] | null}
               sizes={sizes as string[] | null}
               materials={materials as string[] | null}
@@ -182,9 +186,9 @@ async function ProductDetailPage({ params }: Props) {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4">
         {data.recommendations &&
-          data.recommendations.edges.map(({ node }) => (
-            <ProductCard key={node.id} product={node} />
-          ))}
+          data.recommendations.edges
+            .filter(({ node }) => (node.stock ?? 0) > 0)
+            .map(({ node }) => <ProductCard key={node.id} product={node} />)}
       </div>
 
       {/* <ProductCommentsSection

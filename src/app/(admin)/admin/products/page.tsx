@@ -16,6 +16,19 @@ type AdminProjectsPageProps = {
 };
 
 async function ProductsPage({ searchParams }: AdminProjectsPageProps) {
+  const stockParamRaw = searchParams?.stock;
+  const stockParam = Array.isArray(stockParamRaw)
+    ? stockParamRaw[0]
+    : stockParamRaw;
+
+  const initialStockFilter =
+    stockParam === "out" ||
+    stockParam === "low" ||
+    stockParam === "in" ||
+    stockParam === "all"
+      ? stockParam
+      : "all";
+
   const AdminProductsPageQuery = gql(/* GraphQL */ `
     query AdminProductsPageQuery {
       productsCollection(orderBy: [{ created_at: DescNullsLast }]) {
@@ -48,6 +61,7 @@ async function ProductsPage({ searchParams }: AdminProjectsPageProps) {
         <ProductsDataTable
           columns={ProductsColumns}
           data={data.productsCollection?.edges || []}
+          initialStockFilter={initialStockFilter}
         />
       </Suspense>
     </AdminShell>

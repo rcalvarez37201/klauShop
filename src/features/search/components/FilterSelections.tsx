@@ -73,7 +73,7 @@ function FilterSelections({ collectionsSection, shopLayout = true }: Props) {
 
       return params.toString();
     },
-    [searchParams],
+    [searchParams]
   );
 
   const removeQueryString = useCallback(
@@ -83,7 +83,7 @@ function FilterSelections({ collectionsSection, shopLayout = true }: Props) {
       value ? params.set(name, value) : params.delete(name);
       return params.toString();
     },
-    [searchParams],
+    [searchParams]
   );
 
   const debouncedPrice = useDebounce(query.priceRange ?? [0, 10000], 500);
@@ -96,7 +96,7 @@ function FilterSelections({ collectionsSection, shopLayout = true }: Props) {
     )
       startTransition(() => {
         router.push(
-          `${pathname}?${createQueryString("price_range", `${min}-${max}`)}`,
+          `${pathname}?${createQueryString("price_range", `${min}-${max}`)}`
         );
       });
   }, [debouncedPrice]);
@@ -110,7 +110,7 @@ function FilterSelections({ collectionsSection, shopLayout = true }: Props) {
       router.push(
         pathname +
           "?" +
-          createQueryString("collections", JSON.stringify(collections)),
+          createQueryString("collections", JSON.stringify(collections))
       );
     } else {
       const collections = [...oldValue, collectionId];
@@ -120,8 +120,8 @@ function FilterSelections({ collectionsSection, shopLayout = true }: Props) {
           "?" +
           removeQueryString(
             "collections",
-            collections.length > 0 ? JSON.stringify(collections) : undefined,
-          ),
+            collections.length > 0 ? JSON.stringify(collections) : undefined
+          )
       );
     }
   };
@@ -130,7 +130,7 @@ function FilterSelections({ collectionsSection, shopLayout = true }: Props) {
     <>
       <section className="justify-between items-center hidden md:flex">
         <div className="flex gap-x-5 items-center">
-          <span>Filter:</span>
+          <span>Filtros:</span>
           {shopLayout && (
             <CollectionsSelection
               className="flex items-center"
@@ -142,16 +142,16 @@ function FilterSelections({ collectionsSection, shopLayout = true }: Props) {
 
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center">
-              Price Range
+              Rango de precios
               <Icons.chevronDown width={25} height={25} strokeWidth={2} />
             </DropdownMenuTrigger>
 
             <DropdownMenuContent className="p-5 max-w-xl">
-              <DropdownMenuLabel>Price Range</DropdownMenuLabel>
+              <DropdownMenuLabel>Rango de precios (CUP)</DropdownMenuLabel>
               <DropdownMenuSeparator />
 
               <PriceRange
-                label={"Price Range"}
+                label={"Rango de precios (CUP)"}
                 defaultValue={query.priceRange}
                 value={query.priceRange}
                 onMinChange={(data) =>
@@ -177,7 +177,7 @@ function FilterSelections({ collectionsSection, shopLayout = true }: Props) {
 
         <div className="flex gap-x-5 items-center">
           <label htmlFor="sort" className="text-nowrap">
-            Sort by:
+            Ordenar por:
           </label>
 
           <SortSelection
@@ -191,18 +191,16 @@ function FilterSelections({ collectionsSection, shopLayout = true }: Props) {
               value: key,
               label: value,
             }))}
-            placeholder="Sort"
+            placeholder="Ordenar"
           />
         </div>
       </section>
 
       <Sheet>
-        <SheetTrigger className="block md:hidden">
-          Todos los filtros
-        </SheetTrigger>
+        <SheetTrigger className="block md:hidden">Filtros</SheetTrigger>
         <SheetContent className="w-full">
           <SheetHeader>
-            <SheetTitle>Todos los filtros</SheetTitle>
+            <SheetTitle>Filtros</SheetTitle>
             <SheetDescription className="flex flex-col items-start">
               {shopLayout && (
                 <div className="grid">
@@ -244,7 +242,7 @@ function FilterSelections({ collectionsSection, shopLayout = true }: Props) {
                   onReset={() => {
                     setQuery({ ...query, priceRange: undefined });
                     router.push(
-                      pathname + "?" + removeQueryString("price_range"),
+                      pathname + "?" + removeQueryString("price_range")
                     );
                   }}
                 />

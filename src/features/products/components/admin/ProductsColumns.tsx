@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -48,12 +49,23 @@ const ProductsColumns: ColumnDef<{
       const product = row.original.node;
 
       return (
-        <Link
-          href={`/admin/products/${product.id}`}
-          className="text-center font-medium capitalize hover:underline"
-        >
-          {product.name}
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/admin/products/${product.id}`}
+            className="text-center font-medium capitalize hover:underline"
+          >
+            {product.name}
+          </Link>
+          {(product.stock ?? 0) <= 0 ? (
+            <Badge className="bg-red-600 text-white hover:bg-red-600">
+              Sin stock
+            </Badge>
+          ) : (product.stock ?? 0) < 5 ? (
+            <Badge className="bg-yellow-500 text-black hover:bg-yellow-500">
+              Stock bajo
+            </Badge>
+          ) : null}
+        </div>
       );
     },
   },

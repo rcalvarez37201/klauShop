@@ -15,6 +15,7 @@ import {
 } from "@tanstack/react-table";
 import * as React from "react";
 
+import { Button } from "@/components/ui/button";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import {
   Table,
@@ -25,9 +26,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+type StockFilter = "all" | "out" | "low" | "in";
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  /**
+   * Filtro inicial (útil para /admin/products?stock=out).
+   */
+  initialStockFilter?: StockFilter;
+  /**
+   * Cómo leer el stock desde la fila. Por defecto intenta `row.node.stock`.
+   */
+  getRowStock?: (row: TData) => number | null | undefined;
 }
 
 // Hook para detectar si es vista móvil
@@ -64,6 +75,8 @@ function useIsMobile() {
 function DataTable<TData, TValue>({
   columns,
   data,
+  initialStockFilter = "all",
+  getRowStock,
 }: DataTableProps<TData, TValue>) {
   const isMobile = useIsMobile();
   const [rowSelection, setRowSelection] = React.useState({});
@@ -73,6 +86,47 @@ function DataTable<TData, TValue>({
     [],
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [stockFilter, setStockFilter] =
+    React.useState<StockFilter>(initialStockFilter);
+
+  // Mantener sincronizado si el server cambia el filtro por URL
+  React.useEffect(() => {
+    setStockFilter(initialStockFilter);
+  }, [initialStockFilter]);
+
+  const readStock = React.useCallback(
+    (row: TData) => {
+      const value =
+        getRowStock?.(row) ?? (row as any)?.node?.stock ?? (row as any)?.stock;
+      if (value === null || value === undefined) return null;
+      const n = Number(value);
+      return Number.isFinite(n) ? n : null;
+    },
+    [getRowStock],
+  );
+
+  const stockCounts = React.useMemo(() => {
+    let out = 0;
+    let low = 0;
+    let inStock = 0;
+    for (const row of data) {
+      const s = readStock(row);
+      if (s === null || s <= 0) out += 1;
+      else if (s < 5) low += 1;
+      else inStock += 1;
+    }
+    return { out, low, in: inStock, all: data.length };
+  }, [data, readStock]);
+
+  const filteredData = React.useMemo(() => {
+    if (stockFilter === "all") return data;
+    return data.filter((row) => {
+      const s = readStock(row);
+      if (stockFilter === "out") return s === null || s <= 0;
+      if (stockFilter === "low") return s !== null && s > 0 && s < 5;
+      return s !== null && s >= 5;
+    });
+  }, [data, readStock, stockFilter]);
 
   // Actualizar visibilidad de columnas basado en el tamaño de pantalla
   React.useEffect(() => {
@@ -91,7 +145,7 @@ function DataTable<TData, TValue>({
   }, [isMobile]);
 
   const table = useReactTable({
-    data,
+    data: filteredData,
     columns,
     state: {
       sorting,
@@ -114,7 +168,40 @@ function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      {/* <DataTableToolbar table={table} /> */}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant={stockFilter === "all" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setStockFilter("all")}
+        >
+          Todos ({stockCounts.all})
+        </Button>
+        <Button
+          type="button"
+          variant={stockFilter === "out" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setStockFilter("out")}
+        >
+          Sin stock ({stockCounts.out})
+        </Button>
+        <Button
+          type="button"
+          variant={stockFilter === "low" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setStockFilter("low")}
+        >
+          Stock bajo ({stockCounts.low})
+        </Button>
+        <Button
+          type="button"
+          variant={stockFilter === "in" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setStockFilter("in")}
+        >
+          En stock ({stockCounts.in})
+        </Button>
+      </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>

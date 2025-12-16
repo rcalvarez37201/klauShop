@@ -20,8 +20,9 @@ import {
   startOfMonth,
   subDays,
 } from "date-fns";
-import { and, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -110,6 +111,8 @@ export default async function DashboardPage({
     salesCurrentRow,
     salesPrevRow,
     productsTotalRow,
+    outOfStockCountRow,
+    outOfStockProducts,
     productsCurrentRow,
     pendingOrdersRow,
     usersTotalRow,
@@ -169,6 +172,34 @@ export default async function DashboardPage({
         total: sql<number>`COUNT(*)`,
       })
       .from(products),
+    db
+      .select({
+        total: sql<number>`COUNT(*)`,
+      })
+      .from(products)
+      .where(
+        or(
+          eq(products.stock, 0),
+          lt(products.stock, 0),
+          isNull(products.stock),
+        ),
+      ),
+    db
+      .select({
+        id: products.id,
+        name: products.name,
+        stock: products.stock,
+      })
+      .from(products)
+      .where(
+        or(
+          eq(products.stock, 0),
+          lt(products.stock, 0),
+          isNull(products.stock),
+        ),
+      )
+      .orderBy(desc(products.createdAt))
+      .limit(5),
     db
       .select({
         total: sql<number>`COUNT(*)`,
@@ -265,6 +296,7 @@ export default async function DashboardPage({
   const salesCurrent = toNumber(salesCurrentRow?.[0]?.total);
   const salesPrev = toNumber(salesPrevRow?.[0]?.total);
   const productsTotal = toNumber(productsTotalRow?.[0]?.total);
+  const outOfStockCount = toNumber(outOfStockCountRow?.[0]?.total);
   const productsCurrent = toNumber(productsCurrentRow?.[0]?.total);
   const pendingOrders = toNumber(pendingOrdersRow?.[0]?.total);
   const usersTotal = toNumber(usersTotalRow?.[0]?.total);
@@ -421,6 +453,15 @@ export default async function DashboardPage({
                   <div className="text-2xl font-bold">{productsTotal}</div>
                   <p className="text-xs text-muted-foreground">
                     +{productsCurrent} creados en el período
+                    {outOfStockCount > 0 ? (
+                      <Link
+                        href="/admin/products?stock=out"
+                        className="text-red-600 font-medium hover:underline"
+                      >
+                        {" "}
+                        • {outOfStockCount} sin stock
+                      </Link>
+                    ) : null}
                   </p>
                 </CardContent>
               </Card>
@@ -471,6 +512,51 @@ export default async function DashboardPage({
                 </CardContent>
               </Card>
             </div>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <div className="space-y-1">
+                  <CardTitle>Productos sin stock</CardTitle>
+                  <CardDescription>
+                    Productos con existencia 0 (o sin valor de stock).
+                  </CardDescription>
+                </div>
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/admin/products?stock=out">Ver productos</Link>
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {outOfStockCount === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    No hay productos sin stock ahora mismo.
+                  </p>
+                ) : (
+                  <ul className="space-y-2">
+                    {(
+                      outOfStockProducts as Array<{
+                        id: string;
+                        name: string;
+                        stock: number | null;
+                      }>
+                    ).map((p) => (
+                      <li
+                        key={p.id}
+                        className="flex items-center justify-between gap-4"
+                      >
+                        <Link
+                          href={`/admin/products/${p.id}`}
+                          className="font-medium hover:underline"
+                        >
+                          {p.name}
+                        </Link>
+                        <span className="text-sm text-red-600 font-semibold">
+                          Stock: {p.stock ?? 0}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

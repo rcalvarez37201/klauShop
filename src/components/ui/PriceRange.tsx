@@ -32,7 +32,7 @@ function PriceRange({
       <div className="flex flex-1 flex-col gap-5 overflow-hidden px-1">
         <div className="space-y-4">
           <h3 className="text-sm font-medium tracking-wide text-foreground">
-            Price range ($)
+            Rango de precios (CUP)
           </h3>
           <Slider
             variant="range"
@@ -87,7 +87,7 @@ function PriceRange({
           onReset();
         }}
       >
-        Reset
+        Limpiar filtros
       </Button>
     </div>
   );

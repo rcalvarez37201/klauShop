@@ -6,7 +6,7 @@ import type { ProductCardImage } from "@/features/products/components/ProductCar
 import { gql } from "@/gql";
 import { SearchQuery, SearchQueryVariables } from "@/gql/graphql";
 import { useQuery } from "@urql/next";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import SearchProductsGridSkeleton from "./SearchProductsGridSkeleton";
 
 const ProductSearch = gql(/* GraphQL */ `
@@ -55,18 +55,100 @@ const SearchResultPage = ({
   onLoadMore: (cursor: string) => void;
   isLastPage: boolean;
 }) => {
+  const MAX_AUTOFILL_PAGES = 5;
+
+  const variablesKey = useMemo(() => {
+    // We intentionally exclude `after` because this component manages it
+    // internally to "autofill" in-stock products.
+    const { after: _after, ...rest } = variables as any;
+    return JSON.stringify(rest);
+  }, [variables]);
+
+  const [after, setAfter] = useState<SearchQueryVariables["after"]>(
+    variables.after,
+  );
+  const [accEdges, setAccEdges] = useState<
+    NonNullable<SearchQuery["productsCollection"]>["edges"]
+  >([]);
+  const [pageInfo, setPageInfo] = useState<
+    NonNullable<SearchQuery["productsCollection"]>["pageInfo"] | null
+  >(null);
+
+  const autoFillPagesCountRef = useRef(0);
+  const lastProcessedCursorRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    // Reset when search/filter params change (new "page" context)
+    setAfter(variables.after);
+    setAccEdges([]);
+    setPageInfo(null);
+    autoFillPagesCountRef.current = 0;
+    lastProcessedCursorRef.current = null;
+  }, [variablesKey, variables.after]);
+
+  const queryVariables = useMemo(
+    () => ({
+      ...variables,
+      after,
+    }),
+    [variables, after],
+  );
+
   const [result] = useQuery<SearchQuery, SearchQueryVariables>({
     query: ProductSearch,
-    variables,
+    variables: queryVariables,
   });
 
   const { data, fetching, error } = result;
 
   const products = data?.productsCollection;
+  const targetCount = variables.first ?? 0;
+
+  useEffect(() => {
+    if (!products) return;
+
+    const cursor = products.pageInfo?.endCursor ?? null;
+    if (cursor && lastProcessedCursorRef.current === cursor) return;
+    lastProcessedCursorRef.current = cursor;
+
+    const incomingInStock = (products.edges ?? []).filter(
+      ({ node }) => (node.stock ?? 0) > 0,
+    );
+
+    let nextCount = accEdges.length;
+    setAccEdges((prev) => {
+      if (incomingInStock.length === 0) return prev;
+      const seen = new Set(prev.map((e) => e.node.id));
+      const next = [...prev];
+      for (const e of incomingInStock) {
+        if (!seen.has(e.node.id)) next.push(e);
+      }
+      nextCount = next.length;
+      return next;
+    });
+
+    setPageInfo(products.pageInfo);
+
+    // Autocomplete: if we filtered out-of-stock items, keep fetching
+    // subsequent cursor pages until we fill `first` (or run out).
+    if (
+      targetCount > 0 &&
+      nextCount < targetCount &&
+      products.pageInfo.hasNextPage &&
+      products.pageInfo.endCursor &&
+      autoFillPagesCountRef.current < MAX_AUTOFILL_PAGES
+    ) {
+      autoFillPagesCountRef.current += 1;
+      setAfter(products.pageInfo.endCursor);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products]);
+
+  const inStockEdges = accEdges.slice(0, Math.max(0, targetCount));
 
   const productIds = useMemo(
-    () => (products?.edges ?? []).map(({ node }) => node.id).filter(Boolean),
-    [products?.edges],
+    () => inStockEdges.map(({ node }) => node.id).filter(Boolean),
+    [inStockEdges],
   );
 
   const productIdsKey = useMemo(() => productIds.join(","), [productIds]);
@@ -117,15 +199,21 @@ const SearchResultPage = ({
       e.message.toLowerCase().includes("product_medias"),
     );
 
+  const isAutoFilling =
+    fetching &&
+    targetCount > 0 &&
+    inStockEdges.length < targetCount &&
+    (pageInfo?.hasNextPage ?? false);
+
   return (
     <div>
       {shouldShowError && <p>Oh no... {error.message}</p>}
 
-      {fetching && <SearchProductsGridSkeleton />}
+      {fetching && inStockEdges.length === 0 && <SearchProductsGridSkeleton />}
 
-      {products && (
+      {(products || inStockEdges.length > 0) && (
         <>
-          {products.edges.length === 0 && (
+          {!fetching && inStockEdges.length === 0 && (
             <p>
               {`There is no Products with name `}
               <span className="font-bold">
@@ -135,7 +223,7 @@ const SearchResultPage = ({
             </p>
           )}
           <section className="grid grid-cols-2 lg:grid-cols-4 w-full gap-y-8 gap-x-3 py-5">
-            {products.edges.map(({ node }) => (
+            {inStockEdges.map(({ node }) => (
               <ProductCard
                 key={node.id}
                 product={node}
@@ -144,9 +232,14 @@ const SearchResultPage = ({
             ))}
           </section>
 
-          {isLastPage && products.pageInfo.hasNextPage && (
+          {isLastPage && !isAutoFilling && pageInfo?.hasNextPage && (
             <div className="w-full flex justify-center items-center mt-3">
-              <Button onClick={() => onLoadMore(products.pageInfo.endCursor)}>
+              <Button
+                onClick={() => {
+                  if (!pageInfo?.endCursor) return;
+                  onLoadMore(pageInfo.endCursor);
+                }}
+              >
                 Cargar más
               </Button>
             </div>

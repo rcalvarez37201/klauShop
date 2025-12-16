@@ -132,6 +132,10 @@ export default async function Home({
 
   if (data === null) return notFound();
 
+  const sliderInStock = (data.sliderProducts?.edges ?? []).filter(
+    ({ node }) => (node.stock ?? 0) > 0,
+  );
+
   return (
     <main>
       <HeroSection />
@@ -157,12 +161,10 @@ export default async function Home({
           imageLeft={false}
         />
 
-        {data.sliderProducts &&
-        data.sliderProducts.edges &&
-        data.sliderProducts.edges.length > 0 ? (
+        {sliderInStock.length > 0 ? (
           <Suspense fallback={<ProductSliderSkeleton />}>
             <ProductSlider
-              products={data.sliderProducts.edges}
+              products={sliderInStock}
               title="Productos Destacados"
             />
           </Suspense>
