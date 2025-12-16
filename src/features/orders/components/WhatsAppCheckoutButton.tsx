@@ -46,10 +46,13 @@ export function WhatsAppCheckoutButton({
   const [loadingAddresses, setLoadingAddresses] = useState(false);
   const [addresses, setAddresses] = useState<SelectAddress[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<SelectAddress | null>(
-    null,
+    null
+  );
+  const [addressMode, setAddressMode] = useState<"existing" | "new">(
+    "existing"
   );
   const [guestAddress, setGuestAddress] = useState<CustomerInfoInput | null>(
-    null,
+    null
   );
   const { toast } = useToast();
   const router = useRouter();
@@ -84,10 +87,13 @@ export function WhatsAppCheckoutButton({
       const data = await response.json();
 
       if (response.ok) {
-        setAddresses(data.addresses || []);
+        const loadedAddresses = data.addresses || [];
+        setAddresses(loadedAddresses);
+        // Inicializar el modo según si hay direcciones o no
+        setAddressMode(loadedAddresses.length > 0 ? "existing" : "new");
         // Auto-seleccionar la dirección predeterminada
-        const defaultAddress = data.addresses?.find(
-          (a: SelectAddress) => a.isDefault,
+        const defaultAddress = loadedAddresses.find(
+          (a: SelectAddress) => a.isDefault
         );
         if (defaultAddress) {
           setSelectedAddress(defaultAddress);
@@ -191,7 +197,7 @@ export function WhatsAppCheckoutButton({
 
   const handleSubmit = async (
     customerData: CustomerInfoInput,
-    _isNewAddress = false,
+    _isNewAddress = false
   ) => {
     setIsLoading(true);
 
@@ -238,7 +244,7 @@ export function WhatsAppCheckoutButton({
 
       // Redirigir a la página de confirmación
       router.push(
-        `/orders/confirmation?orderId=${data.orderId}&orderNumber=${data.orderNumber}`,
+        `/orders/confirmation?orderId=${data.orderId}&orderNumber=${data.orderNumber}`
       );
 
       // Abrir WhatsApp después de un pequeño delay
@@ -299,17 +305,20 @@ export function WhatsAppCheckoutButton({
               addresses={addresses}
               onSelectAddress={handleSelectAddress}
               onNewAddress={handleNewAddress}
+              onModeChange={setAddressMode}
               isLoading={isLoading}
             />
-            {addresses.length > 0 && selectedAddress && (
-              <Button
-                onClick={handleContinueWithSelected}
-                disabled={isLoading}
-                className="w-full"
-              >
-                {isLoading ? "Procesando..." : "Continuar con esta dirección"}
-              </Button>
-            )}
+            {addresses.length > 0 &&
+              selectedAddress &&
+              addressMode === "existing" && (
+                <Button
+                  onClick={handleContinueWithSelected}
+                  disabled={isLoading}
+                  className="w-full"
+                >
+                  {isLoading ? "Procesando..." : "Continuar con esta dirección"}
+                </Button>
+              )}
           </div>
         ) : (
           // Usuario guest: formulario tradicional con autocompletado

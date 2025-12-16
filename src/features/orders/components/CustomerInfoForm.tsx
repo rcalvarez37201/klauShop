@@ -1,5 +1,6 @@
 "use client";
 
+import { PhoneInputField } from "@/components/forms/PhoneInputField";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -67,15 +68,10 @@ export function CustomerInfoForm({
             <FormItem>
               <FormLabel>Teléfono *</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="+1 234 567 8901"
-                  type="tel"
-                  {...field}
-                  disabled={isLoading}
-                />
+                <PhoneInputField field={field} disabled={isLoading} />
               </FormControl>
               <FormDescription>
-                Incluye código de país si es necesario
+                Selecciona el país y escribe solo el número (sin el +código).
               </FormDescription>
               <FormMessage />
             </FormItem>
