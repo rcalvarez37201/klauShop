@@ -22,9 +22,29 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
+    // Verificar que el usuario sea admin
+    const supabase = createRouteHandlerClient({ cookies });
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile?.is_admin) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+    }
+
     const body = await request.json();
 
-    // Validar datos de entrada
+    // Validar datos de entrada (mismo contrato que WhatsApp checkout)
     const parsed = createWhatsAppOrderSchema.safeParse(body);
 
     if (parsed.success === false) {
@@ -39,60 +59,33 @@ export async function POST(request: Request) {
 
     const { cartItems, customerData, shippingCost } = parsed.data;
 
-    // Obtener usuario si está autenticado
-    const supabase = createRouteHandlerClient({ cookies });
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    // Realizar toda la operación en una transacción
+    // Transacción: crear orden + líneas + reservas
     const result = await db.transaction(async (tx) => {
-      // 1. Obtener información de los productos con lock para evitar race conditions
       const productIds = cartItems.map((item) => item.productId);
-      const uniqueProductIds = [...new Set(productIds)]; // IDs únicos
+      const uniqueProductIds = [...new Set(productIds)];
 
-      console.log("🔍 Buscando productos únicos:", uniqueProductIds);
-
+      // Lock pesimista de productos para evitar race conditions
       const productsData = await tx
         .select()
         .from(products)
         .where(inArray(products.id, uniqueProductIds))
-        .for("update"); // SELECT FOR UPDATE - lock pesimista
+        .for("update");
 
-      console.log("✅ Productos encontrados:", productsData.length);
-      console.log(
-        "📦 Productos:",
-        productsData.map((p) => ({ id: p.id, name: p.name })),
-      );
-
-      // Verificar que todos los productos únicos fueron encontrados
       if (productsData.length !== uniqueProductIds.length) {
         const foundIds = productsData.map((p) => p.id);
         const missingIds = uniqueProductIds.filter(
           (id) => !foundIds.includes(id),
         );
-        console.error("❌ Productos faltantes:", missingIds);
         throw new Error(`Productos no encontrados: ${missingIds.join(", ")}`);
       }
 
-      // 2. Verificar disponibilidad de stock para cada item
+      // Verificar stock para cada ítem
       const stockChecks = await Promise.all(
         cartItems.map(async (item) => {
           const available = await getAvailableStock(item.productId, {
             color: item.color || null,
             size: item.size || null,
             material: item.material || null,
-          });
-
-          console.log(`📊 Stock check para ${item.productId}:`, {
-            requested: item.quantity,
-            available,
-            hasStock: available >= item.quantity,
-            variant: {
-              color: item.color,
-              size: item.size,
-              material: item.material,
-            },
           });
 
           return {
@@ -104,9 +97,7 @@ export async function POST(request: Request) {
         }),
       );
 
-      // Verificar si algún producto no tiene suficiente stock
       const outOfStock = stockChecks.filter((check) => !check.hasStock);
-
       if (outOfStock.length > 0) {
         const product = productsData.find(
           (p) => p.id === outOfStock[0].productId,
@@ -116,7 +107,6 @@ export async function POST(request: Request) {
         );
       }
 
-      // 3. Calcular subtotal
       const subtotal = cartItems.reduce((acc, item) => {
         const product = productsData.find((p) => p.id === item.productId);
         return acc + item.quantity * parseFloat(product?.price || "0");
@@ -124,11 +114,11 @@ export async function POST(request: Request) {
 
       const totalAmount = subtotal + (shippingCost || 0);
 
-      // 4. Crear la orden
       const [order] = await tx
         .insert(orders)
         .values({
-          user_id: user?.id || null,
+          // En admin no asociamos la orden al usuario admin
+          user_id: null,
           currency: "usd",
           amount: totalAmount.toString(),
           order_status: "pending_confirmation",
@@ -142,7 +132,6 @@ export async function POST(request: Request) {
         })
         .returning();
 
-      // 5. Crear order lines
       const orderLinesData = cartItems.map((item) => {
         const product = productsData.find((p) => p.id === item.productId);
         return {
@@ -155,7 +144,6 @@ export async function POST(request: Request) {
 
       await tx.insert(orderLines).values(orderLinesData);
 
-      // 6. Crear reservas de inventario
       await Promise.all(
         cartItems.map((item) =>
           createReservation(tx, order.id, item.productId, item.quantity, {
@@ -169,11 +157,11 @@ export async function POST(request: Request) {
       return { order, productsData };
     });
 
-    // 7. Generar mensaje de WhatsApp
+    // Generar mensaje/URL de WhatsApp (mismo formato que checkout)
     const orderNumber = formatOrderNumber(result.order.id);
     const adminUrl = `${getURL()}/admin/orders/${result.order.id}`;
 
-    const items = cartItems.map((item) => {
+    const items = parsed.data.cartItems.map((item) => {
       const product = result.productsData.find((p) => p.id === item.productId);
       return {
         name: product?.name || "Producto",
@@ -199,18 +187,6 @@ export async function POST(request: Request) {
       adminUrl,
     });
 
-    // 8. Limpiar el carrito del usuario si está autenticado
-    if (user?.id) {
-      try {
-        await supabase.from("carts").delete().eq("user_id", user.id);
-        console.log("✅ Carrito limpiado para el usuario:", user.id);
-      } catch (cartError) {
-        console.error("⚠️ Error limpiando carrito (no crítico):", cartError);
-        // No lanzamos error porque la orden ya fue creada exitosamente
-      }
-    }
-
-    // 9. Responder con la información de la orden
     return NextResponse.json(
       {
         success: true,
@@ -223,16 +199,15 @@ export async function POST(request: Request) {
       { status: 201 },
     );
   } catch (error: any) {
-    console.error("Error creating WhatsApp order:", error);
+    console.error("Error creating admin order:", error);
 
-    // Manejo especial para errores de stock
     if (error.message?.startsWith("OUT_OF_STOCK")) {
       return NextResponse.json(
         {
           error: "INSUFFICIENT_STOCK",
           message: error.message,
         },
-        { status: 409 }, // Conflict
+        { status: 409 },
       );
     }
 

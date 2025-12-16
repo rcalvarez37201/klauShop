@@ -1,8 +1,11 @@
 import AdminShell from "@/components/admin/AdminShell";
+import { buttonVariants } from "@/components/ui/button";
 import { DataTableSkeleton } from "@/features/cms";
 import { OrdersColumns, OrdersDataTable } from "@/features/orders";
 import { gql } from "@/gql";
 import { getClient } from "@/lib/urql";
+import { cn } from "@/lib/utils";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
@@ -36,11 +39,11 @@ async function OrdersPage({}: AdminOrdersPageProps) {
       heading="Órdenes"
       description={"Edite las órdenes desde el dashboard. "}
     >
-      {/* <section className="flex justify-end items-center pb-5 w-full">
+      <section className="flex justify-end items-center pb-5 w-full">
         <Link href="/admin/orders/new" className={cn(buttonVariants())}>
           Nueva Orden
         </Link>
-      </section> */}
+      </section>
 
       <Suspense fallback={<DataTableSkeleton />}>
         <OrdersDataTable
