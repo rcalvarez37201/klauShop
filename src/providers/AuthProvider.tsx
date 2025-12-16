@@ -49,8 +49,12 @@ export const SupabaseAuthProvider: React.FC<SupabaseAuthProviderProps> = ({
           });
           break;
         case "PASSWORD_RECOVERY":
-          supabase.auth.signOut();
-          setUser(null);
+          // IMPORTANT:
+          // For password recovery flows, Supabase establishes a temporary session.
+          // We must keep it so the user can call `auth.updateUser({ password })`.
+          supabase.auth.getUser().then(({ data }) => {
+            setUser(data.user);
+          });
           break;
 
         case "SIGNED_IN":

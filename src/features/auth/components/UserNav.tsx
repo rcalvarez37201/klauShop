@@ -23,9 +23,14 @@ import { useRouter } from "next/navigation";
 function UserNav() {
   const router = useRouter();
   const { user } = useAuth();
+  const avatarUrl =
+    (user?.user_metadata?.avatar_url as string | undefined) ?? "";
+  const displayName =
+    (user?.user_metadata?.name as string | undefined) ?? "User";
 
-  const logout = () => {
-    supabaseClient.auth.signOut();
+  const logout = async () => {
+    await supabaseClient.auth.signOut();
+    router.push("/");
     router.refresh();
   };
 
@@ -41,19 +46,15 @@ function UserNav() {
               <Avatar className="h-8 w-8 focus:ring-0 border-0">
                 {/* TODO: UPDATE AVATOR IMAGE & NAME */}
                 <AvatarImage
-                  src="/avatars/01.png"
-                  alt={getNameInitials(
-                    (user.user_metadata.name as string) ?? "Name",
-                  )}
+                  src={avatarUrl || "/avatars/01.png"}
+                  alt={getNameInitials(displayName)}
                 />
                 <AvatarFallback className="text-accent border border-primary bg-primary-200">
-                  {getNameInitials(
-                    (user.user_metadata.name as string) ?? "Name",
-                  )}
+                  {getNameInitials(displayName)}
                 </AvatarFallback>
               </Avatar>
               <span className="text-sm font-medium hidden sm:inline-block text-primary">
-                {user.user_metadata.name || "User"}
+                {displayName}
               </span>
             </Button>
           </DropdownMenuTrigger>
@@ -62,7 +63,7 @@ function UserNav() {
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">
-                  {user.user_metadata.name || "username"}
+                  {displayName}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground">
                   {user.email}
@@ -81,7 +82,7 @@ function UserNav() {
                 <DropdownMenuItem>Carrito</DropdownMenuItem>
               </Link>
               <Link href="/setting">
-                <DropdownMenuItem>Configuración</DropdownMenuItem>
+                <DropdownMenuItem>Configuraciones</DropdownMenuItem>
               </Link>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

@@ -3,27 +3,23 @@ import { Separator } from "@/components/ui/separator";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Configuración",
+  title: "Configuraciones",
   description:
     "Gestiona tus configuraciones y preferencias de correo electrónico.",
 };
 
 const sidebarNavItems = [
   {
-    title: "Profile",
+    title: "Perfil",
     href: "/setting",
   },
   {
-    title: "Account",
+    title: "Cuenta",
     href: "/setting/account",
   },
   {
-    title: "Address",
+    title: "Direcciones",
     href: "/setting/address",
-  },
-  {
-    title: "News Letter",
-    href: "/setting/newsletter",
   },
 ];
 
@@ -34,11 +30,11 @@ interface SettingsLayoutProps {
 export default function SettingsLayout({ children }: SettingsLayoutProps) {
   return (
     <>
-      <div className="hidden space-y-6 p-10 pb-16 md:block">
+      <div className="space-y-6 p-10 pb-16 max-w-screen-2xl mx-auto">
         <div className="space-y-0.5">
-          <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Configuraciones</h2>
           <p className="text-muted-foreground">
-            Manage your account settings and set e-mail preferences.
+            Gestiona tus configuraciones y preferencias de usuario.
           </p>
         </div>
         <Separator className="my-6" />

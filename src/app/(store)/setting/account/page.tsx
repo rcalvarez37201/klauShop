@@ -1,9 +1,20 @@
-import React from "react";
+import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { AccountClient } from "./AccountClient";
 
-type Props = {};
+export default async function AccountPage() {
+  const cookieStore = cookies();
+  const supabase = createClient({ cookieStore });
 
-function AccountPage({}: Props) {
-  return <div>Account Page</div>;
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    redirect("/sign-in");
+  }
+
+  return <AccountClient />;
 }
-
-export default AccountPage;

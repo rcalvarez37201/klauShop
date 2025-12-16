@@ -126,7 +126,7 @@ export function AddressManagementClient({
             Nueva dirección
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingAddress ? "Editar dirección" : "Nueva dirección"}
