@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { DeleteOrderDialog } from "@/features/orders/components/admin/DeleteOrderDialog";
 import OrderStatusChanger from "@/features/orders/components/admin/OrderStatusChanger";
 import { getOrderStatusInfo } from "@/features/orders/utils/orderStatus";
 import { formatOrderNumber } from "@/features/orders/utils/whatsapp";
@@ -287,6 +288,16 @@ export default async function AdminOrderDetailPage({
             currentStatus={orderStatus}
             paymentStatus={order.payment_status}
           />
+
+          {/* Eliminar Orden */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Acciones Peligrosas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DeleteOrderDialog orderId={order.id} variant="button" />
+            </CardContent>
+          </Card>
 
           {/* Información del cliente */}
           <Card>

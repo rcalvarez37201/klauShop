@@ -1,11 +1,11 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuLabel,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DocumentType, gql } from "@/gql";
@@ -16,6 +16,7 @@ import { MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { getOrderStatusInfo } from "../../utils/orderStatus";
 import { formatOrderNumber } from "../../utils/whatsapp";
+import { DeleteOrderDialog } from "./DeleteOrderDialog";
 
 export const OrderColumnsFragment = gql(/* GraphQL */ `
   fragment OrderColumnsFragment on orders {
@@ -139,19 +140,11 @@ const OrdersColumns: ColumnDef<{
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="start"
-            className="flex flex-col items-start"
-          >
-            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-
-            <Link
-              href={`/admin/orders/${order.id}`}
-              className={buttonVariants({ variant: "ghost" })}
-            >
-              Editar Ordenes
-            </Link>
-            {/* <DeleteCategoryDialog categoryId={category.id} /> */}
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem asChild>
+              <Link href={`/admin/orders/${order.id}`}>Editar Ordenes</Link>
+            </DropdownMenuItem>
+            <DeleteOrderDialog orderId={order.id} variant="dropdown" />
           </DropdownMenuContent>
         </DropdownMenu>
       );
