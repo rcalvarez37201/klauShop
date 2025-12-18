@@ -1,7 +1,12 @@
 "use server";
 
 import db from "@/lib/supabase/db";
-import { InsertProducts, productMedias, products } from "@/lib/supabase/schema";
+import {
+  InsertProducts,
+  orderLines,
+  productMedias,
+  products,
+} from "@/lib/supabase/schema";
 import { asc, eq, inArray } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 
@@ -130,4 +135,31 @@ export const getProductsByIds = async (productIds: string[]) => {
     .select()
     .from(products)
     .where(inArray(products.id, productIds));
+};
+
+export const deleteProductAction = async (productId: string) => {
+  // Verificar si el producto tiene órdenes relacionadas
+  const productOrders = await db
+    .select()
+    .from(orderLines)
+    .where(eq(orderLines.productId, productId))
+    .limit(1);
+
+  if (productOrders.length > 0) {
+    throw new Error(
+      "No se puede eliminar el producto porque tiene órdenes asociadas. Las órdenes deben mantenerse para el historial de compras. Si necesitas ocultar el producto, considera marcarlo como no disponible o reduciendo el stock a 0.",
+    );
+  }
+
+  // Primero eliminar las imágenes adicionales relacionadas
+  await db.delete(productMedias).where(eq(productMedias.productId, productId));
+
+  // Luego eliminar el producto
+  // Nota: Los carritos (carts) se eliminarán automáticamente por CASCADE
+  const deletedProduct = await db
+    .delete(products)
+    .where(eq(products.id, productId))
+    .returning();
+
+  return deletedProduct;
 };

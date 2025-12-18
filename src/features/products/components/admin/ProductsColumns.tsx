@@ -1,17 +1,18 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuLabel,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DocumentType, gql } from "@/gql";
 import { ColumnDef } from "@tanstack/react-table";
 import { CheckCircle2, MoreHorizontal, XCircle } from "lucide-react";
 import Link from "next/link";
+import { DeleteProductDialog } from "./DeleteProductDialog";
 
 export const ProductColumnFragment = gql(/* GraphQL */ `
   fragment ProductColumnFragment on products {
@@ -168,19 +169,17 @@ const ProductsColumns: ColumnDef<{
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="start"
-            className="flex flex-col items-start"
-          >
-            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-
-            <Link
-              href={`/admin/products/${product.id}`}
-              className={buttonVariants({ variant: "ghost" })}
-            >
-              Editar Producto
-            </Link>
-            {/* <DeleteCategoryDialog categoryId={category.id} /> */}
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem asChild>
+              <Link href={`/admin/products/${product.id}`}>
+                Editar Producto
+              </Link>
+            </DropdownMenuItem>
+            <DeleteProductDialog
+              productId={product.id}
+              productName={product.name}
+              variant="dropdown"
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       );

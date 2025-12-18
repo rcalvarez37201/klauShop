@@ -42,6 +42,7 @@ import { Suspense, useTransition } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { gql } from "urql";
 import { z } from "zod";
+import { DeleteProductDialog } from "./DeleteProductDialog";
 
 type ProductsFormProps = {
   product?: SelectProducts;
@@ -526,6 +527,14 @@ function ProductFrom({
           <Link href="/admin/products" className={buttonVariants()}>
             Cancelar
           </Link>
+          {product && (
+            <div className="ml-auto">
+              <DeleteProductDialog
+                productId={product.id}
+                productName={product.name}
+              />
+            </div>
+          )}
         </div>
       </form>
     </Form>
