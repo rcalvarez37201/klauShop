@@ -5,40 +5,56 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   const cookieStore = cookies();
-  const client = createClient({ cookieStore, isAdmin: true });
-  const session = await client.auth.getSession();
 
-  if (!session.data.session.user.app_metadata.isAdmin)
+  // Primero autenticar con cliente normal (lee cookies)
+  const supabase = createClient({ cookieStore });
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  // Verificar que el usuario esté autenticado
+  if (authError || !user) {
+    return NextResponse.json({ message: "No autenticado" }, { status: 401 });
+  }
+
+  // Verificar que el usuario sea admin
+  if (!user.app_metadata?.isAdmin) {
     return NextResponse.json(
-      { message: `Only Admin allowed to do this action.` },
-      { status: 500 },
+      { message: "Solo administradores pueden realizar esta acción" },
+      { status: 403 },
     );
+  }
+
+  // Crear cliente admin para operaciones privilegiadas
+  const adminClient = createClient({ cookieStore, isAdmin: true });
 
   const data: PromoteAdminSchema = await request.json();
   const validate = promoteAdminSchema.safeParse(data);
 
-  if (!validate)
+  if (!validate.success) {
     return NextResponse.json(
-      { message: "Error, Data validation failed." },
-      { status: 500 },
+      { message: "Error, validación de datos fallida" },
+      { status: 400 },
     );
+  }
 
-  const { data: userResponse } = await client.auth.admin.getUserById(
-    data.userId,
+  const { data: userResponse } = await adminClient.auth.admin.getUserById(
+    validate.data.userId,
   );
 
   if (!userResponse.user)
     return NextResponse.json(
-      { message: `Error, UserId: ${data.userId} not found.` },
-      { status: 500 },
+      { message: `Error, UserId: ${validate.data.userId} no encontrado` },
+      { status: 404 },
     );
 
   console.log("userResponse", userResponse.user);
 
-  const { data: updatedUser, error } = await client.auth.admin.updateUserById(
-    data.userId,
-    { app_metadata: { isAdmin: true } },
-  );
+  const { data: updatedUser, error } =
+    await adminClient.auth.admin.updateUserById(validate.data.userId, {
+      app_metadata: { isAdmin: true },
+    });
 
   if (error)
     return NextResponse.json({ message: error.message }, { status: 500 });
