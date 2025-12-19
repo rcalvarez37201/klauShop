@@ -171,7 +171,8 @@ export async function POST(request: Request) {
 
     // 7. Generar mensaje de WhatsApp
     const orderNumber = formatOrderNumber(result.order.id);
-    const adminUrl = `${getURL()}/admin/orders/${result.order.id}`;
+    // URL de redirección inteligente que redirige según el tipo de usuario
+    const orderRedirectUrl = `${getURL()}order/${result.order.id}`;
 
     const items = cartItems.map((item) => {
       const product = result.productsData.find((p) => p.id === item.productId);
@@ -196,7 +197,7 @@ export async function POST(request: Request) {
       subtotal,
       shippingCost,
       customerData: customerData as CustomerData,
-      adminUrl,
+      adminUrl: orderRedirectUrl,
     });
 
     // 8. Limpiar el carrito del usuario si está autenticado
@@ -218,7 +219,7 @@ export async function POST(request: Request) {
         orderNumber,
         whatsappUrl: url,
         whatsappMessage: message,
-        adminUrl,
+        adminUrl: orderRedirectUrl,
       },
       { status: 201 },
     );

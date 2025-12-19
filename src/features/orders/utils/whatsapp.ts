@@ -65,8 +65,8 @@ export function generateWhatsAppMessage(data: WhatsAppMessageData): string {
     message += `\n*Notas:* ${customerData.notes}\n`;
   }
 
-  // Link al admin
-  message += `\n📋 Ver orden en admin:\n${data.adminUrl}`;
+  // Link a la orden (redirige según el tipo de usuario)
+  message += `\n📋 Ver orden:\n${data.adminUrl}`;
 
   return message;
 }

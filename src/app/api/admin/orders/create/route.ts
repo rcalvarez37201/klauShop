@@ -159,7 +159,8 @@ export async function POST(request: Request) {
 
     // Generar mensaje/URL de WhatsApp (mismo formato que checkout)
     const orderNumber = formatOrderNumber(result.order.id);
-    const adminUrl = `${getURL()}/admin/orders/${result.order.id}`;
+    // URL de redirección inteligente que redirige según el tipo de usuario
+    const orderRedirectUrl = `${getURL()}order/${result.order.id}`;
 
     const items = parsed.data.cartItems.map((item) => {
       const product = result.productsData.find((p) => p.id === item.productId);
@@ -184,7 +185,7 @@ export async function POST(request: Request) {
       subtotal,
       shippingCost,
       customerData: customerData as CustomerData,
-      adminUrl,
+      adminUrl: orderRedirectUrl,
     });
 
     return NextResponse.json(
@@ -194,7 +195,7 @@ export async function POST(request: Request) {
         orderNumber,
         whatsappUrl: url,
         whatsappMessage: message,
-        adminUrl,
+        adminUrl: orderRedirectUrl,
       },
       { status: 201 },
     );
