@@ -23,13 +23,7 @@ export async function GET() {
       return NextResponse.json({ error: "No autenticado" }, { status: 401 });
     }
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile?.is_admin) {
+    if (!user.app_metadata?.isAdmin) {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
@@ -59,13 +53,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No autenticado" }, { status: 401 });
     }
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile?.is_admin) {
+    if (!user.app_metadata?.isAdmin) {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 

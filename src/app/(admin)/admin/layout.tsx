@@ -23,14 +23,8 @@ export default async function DashboardLayout({
     redirect("/sign-in");
   }
 
-  // Verificar que el usuario sea admin (evita exponer métricas/gestión a usuarios normales)
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.is_admin) {
+  // Verificar que el usuario sea admin usando app_metadata
+  if (!user.app_metadata?.isAdmin) {
     redirect("/");
   }
 

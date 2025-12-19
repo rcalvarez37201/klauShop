@@ -1,10 +1,10 @@
+import { consumeReservationsAndDeductStock } from "@/features/orders/utils/inventory";
 import db from "@/lib/supabase/db";
 import { inventoryReservations, orders } from "@/lib/supabase/schema";
-import { NextResponse } from "next/server";
-import { consumeReservationsAndDeductStock } from "@/features/orders/utils/inventory";
-import { eq, and } from "drizzle-orm";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { and, eq } from "drizzle-orm";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 export async function POST(
   request: Request,
@@ -23,14 +23,7 @@ export async function POST(
       return NextResponse.json({ error: "No autenticado" }, { status: 401 });
     }
 
-    // Verificar si es admin (asumiendo que tienes esta información en el perfil)
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile?.is_admin) {
+    if (!user.app_metadata?.isAdmin) {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 

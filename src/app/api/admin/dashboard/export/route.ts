@@ -29,13 +29,7 @@ export async function GET(request: Request) {
     return new Response("No autenticado", { status: 401 });
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.is_admin) {
+  if (!user.app_metadata?.isAdmin) {
     return new Response("No autorizado", { status: 403 });
   }
 
