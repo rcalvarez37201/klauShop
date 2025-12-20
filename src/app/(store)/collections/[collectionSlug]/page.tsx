@@ -1,6 +1,6 @@
 import { Shell } from "@/components/layouts/Shell";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getPageTitle, siteConfig } from "@/config/site";
+import { getPageMetadata, getPageTitle, siteConfig } from "@/config/site";
 import { CollectionBanner } from "@/features/collections";
 import { SearchProductsGridSkeleton } from "@/features/products";
 import {
@@ -9,7 +9,14 @@ import {
 } from "@/features/search";
 import { gql } from "@/gql";
 import { getServiceClient } from "@/lib/urql-service";
-import { toTitleCase, unslugify } from "@/lib/utils";
+import {
+  getURL,
+  keytoUrl,
+  stripHtml,
+  toTitleCase,
+  unslugify,
+} from "@/lib/utils";
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
@@ -24,11 +31,86 @@ interface CategoryPageProps {
   };
 }
 
-export function generateMetadata({ params }: CategoryPageProps) {
-  const collectionTitle = toTitleCase(unslugify(params.collectionSlug));
+const CollectionMetadataQuery = gql(/* GraphQL */ `
+  query CollectionMetadataQuery($collectionSlug: String) {
+    collectionsCollection(filter: { slug: { eq: $collectionSlug } }, first: 1) {
+      edges {
+        node {
+          id
+          title
+          label
+          description
+          slug
+          featuredImage: medias {
+            id
+            key
+            alt
+          }
+        }
+      }
+    }
+  }
+`);
+
+export async function generateMetadata({
+  params,
+}: CategoryPageProps): Promise<Metadata> {
+  const client = getServiceClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const result = await client.query(
+    CollectionMetadataQuery as any,
+    {
+      collectionSlug: params.collectionSlug,
+    } as any,
+  );
+
+  if (!result.data?.collectionsCollection?.edges[0]?.node) {
+    const collectionTitle = toTitleCase(unslugify(params.collectionSlug));
+    return getPageMetadata(collectionTitle);
+  }
+
+  const collection = result.data.collectionsCollection.edges[0].node;
+  const baseUrl = getURL();
+  const collectionUrl = `${baseUrl}collections/${collection.slug}`;
+  const cleanDescription = stripHtml(collection.description || "");
+  const metaDescription =
+    cleanDescription.substring(0, 160) ||
+    `${collection.label} - Explora nuestra colección de ${collection.label.toLowerCase()} en ${siteConfig.name}`;
+
+  const imageUrl = collection.featuredImage?.key
+    ? keytoUrl(collection.featuredImage.key)
+    : undefined;
+
   return {
-    title: getPageTitle(collectionTitle),
-    description: `${siteConfig.name} | Buy ${params.collectionSlug} furniture.`,
+    title: getPageTitle(collection.label),
+    description: metaDescription,
+    openGraph: {
+      title: `${collection.label} - ${siteConfig.name}`,
+      description: metaDescription,
+      url: collectionUrl,
+      siteName: siteConfig.name,
+      images: imageUrl
+        ? [
+            {
+              url: imageUrl,
+              width: 1200,
+              height: 630,
+              alt: collection.featuredImage?.alt || collection.label,
+            },
+          ]
+        : [],
+      type: "website",
+      locale: "es_ES",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${collection.label} - ${siteConfig.name}`,
+      description: metaDescription,
+      images: imageUrl ? [imageUrl] : [],
+    },
+    alternates: {
+      canonical: collectionUrl,
+    },
   };
 }
 
