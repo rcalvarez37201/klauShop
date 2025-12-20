@@ -85,7 +85,7 @@ function DataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [stockFilter, setStockFilter] =
@@ -105,7 +105,7 @@ function DataTable<TData, TValue>({
       const n = Number(value);
       return Number.isFinite(n) ? n : null;
     },
-    [getRowStock]
+    [getRowStock],
   );
 
   const stockCounts = React.useMemo(() => {
@@ -166,7 +166,7 @@ function DataTable<TData, TValue>({
         description.includes(search)
       );
     },
-    []
+    [],
   );
 
   const table = useReactTable({
@@ -253,7 +253,7 @@ function DataTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -272,7 +272,7 @@ function DataTable<TData, TValue>({
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}

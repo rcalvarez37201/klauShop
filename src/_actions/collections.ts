@@ -1,8 +1,53 @@
 "use server";
 
 import db from "@/lib/supabase/db";
-import { collections, products } from "@/lib/supabase/schema";
+import {
+  InsertCollection,
+  SelectCollection,
+  collections,
+  products,
+} from "@/lib/supabase/schema";
 import { eq } from "drizzle-orm";
+
+export const createCollectionAction = async (
+  data: InsertCollection,
+): Promise<SelectCollection> => {
+  const [createdCollection] = await db
+    .insert(collections)
+    .values({
+      ...data,
+      parentId: data.parentId || null,
+      showInHome: data.showInHome || false,
+    })
+    .returning();
+
+  if (!createdCollection) {
+    throw new Error("Error al crear la colección.");
+  }
+
+  return createdCollection;
+};
+
+export const updateCollectionAction = async (
+  collectionId: string,
+  data: Partial<InsertCollection>,
+): Promise<SelectCollection> => {
+  const [updatedCollection] = await db
+    .update(collections)
+    .set({
+      ...data,
+      parentId: data.parentId || null,
+      showInHome: data.showInHome ?? false,
+    })
+    .where(eq(collections.id, collectionId))
+    .returning();
+
+  if (!updatedCollection) {
+    throw new Error("No se encontró la colección para actualizar.");
+  }
+
+  return updatedCollection;
+};
 
 export const deleteCollectionAction = async (collectionId: string) => {
   // Verificar si la colección tiene productos asociados

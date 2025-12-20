@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,24 +39,27 @@ const OrdersColumns: ColumnDef<{
   node: DocumentType<typeof OrderColumnsFragment>;
 }>[] = [
   {
-    accessorKey: "label",
-    header: () => <div className="text-left capitalize">Número</div>,
+    accessorFn: (row) => row.node.id,
+    accessorKey: "id",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Número" />
+    ),
     cell: ({ row }) => {
       const order = row.original.node;
 
       return (
-        <Link
-          href={`/admin/orders/${order.id}`}
-          className="text-center font-medium capitalize hover:underline"
-        >
+        <Link href={`/admin/orders/${order.id}`} className="font-medium">
           {formatOrderNumber(order.id)}
         </Link>
       );
     },
   },
   {
+    accessorFn: (row) => row.node.order_status || "",
     accessorKey: "order_status",
-    header: () => <div className="">Estado</div>,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Estado" />
+    ),
     cell: ({ row }) => {
       const order = row.original.node;
       const status = order.order_status as OrderStatus;
@@ -97,8 +101,11 @@ const OrdersColumns: ColumnDef<{
     },
   },
   {
+    accessorFn: (row) => row.node.payment_status,
     accessorKey: "payment_status",
-    header: () => <div className="text-left capitalize">Estado de Pago</div>,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Estado de Pago" />
+    ),
     cell: ({ row }) => {
       const order = row.original.node;
 

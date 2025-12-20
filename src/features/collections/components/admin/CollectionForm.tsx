@@ -20,6 +20,10 @@ import { Input } from "@/components/ui/input";
 
 import { InsertCollection, collections } from "@/lib/supabase/schema";
 
+import {
+  createCollectionAction,
+  updateCollectionAction,
+} from "@/_actions/collections";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Select,
@@ -33,14 +37,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { ImageDialog } from "@/features/medias";
 import { DocumentType, gql } from "@/gql";
-import { useMutation, useQuery } from "@urql/next";
+import { useQuery } from "@urql/next";
 import { nanoid } from "nanoid";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  CreateCollectionMutation,
-  UpdateCollectionMutation,
-} from "../../query";
 import { DeleteCollectionDialog } from "./DeleteCollectionDialog";
 
 const CollectionFromFragment = gql(/* GraphQL */ `
@@ -139,9 +139,6 @@ function CollectionForm({ collection }: CollectionFormProps) {
   const { toast } = useToast();
   const [isPending, setIsPending] = useState(false);
 
-  const [, updateCollection] = useMutation(UpdateCollectionMutation);
-  const [, createCollection] = useMutation(CreateCollectionMutation);
-
   // Query collections once at the parent level
   const [{ data, fetching, error }] = useQuery({
     query: CollectionsQuery,
@@ -165,38 +162,32 @@ function CollectionForm({ collection }: CollectionFormProps) {
   const onSubmit = handleSubmit(async (data: InsertCollection) => {
     setIsPending(true);
     try {
-      const mutationData = {
-        ...data,
-        parentId: data.parentId || null,
-        showInHome: data.showInHome || false,
-      };
-
       if (collection) {
-        const res = await updateCollection({
-          id: collection.id,
-          ...mutationData,
-        });
+        await updateCollectionAction(collection.id, data);
         setIsPending(false);
-        if (res.data) {
-          router.push("/admin/collections");
-          router.refresh();
-          toast({ title: "Colección actualizada correctamente." });
-        }
+        router.push("/admin/collections");
+        router.refresh();
+        toast({ title: "Colección actualizada correctamente." });
       } else {
-        const res = await createCollection({
+        await createCollectionAction({
+          ...data,
           id: nanoid(),
-          ...mutationData,
         });
         setIsPending(false);
-        if (res.data) {
-          router.push("/admin/collections");
-          router.refresh();
-
-          toast({ title: "Colección creada correctamente." });
-        }
+        router.push("/admin/collections");
+        router.refresh();
+        toast({ title: "Colección creada correctamente." });
       }
-    } catch {
+    } catch (error) {
       setIsPending(false);
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Ocurrió un error al guardar la colección.",
+        variant: "destructive",
+      });
     }
   });
 
