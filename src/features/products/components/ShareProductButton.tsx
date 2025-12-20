@@ -20,7 +20,7 @@ export function ShareProductButton({
   discount,
   description,
   slug,
-  imageKey,
+  className,
 }: ShareProductButtonProps) {
   const handleShare = () => {
     // Calcular precio con descuento
