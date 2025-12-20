@@ -27,6 +27,7 @@ import {
   Package,
   Plus,
   Receipt,
+  RefreshCw,
   Search,
   ShoppingBag,
   ShoppingBasket,
@@ -84,6 +85,7 @@ export const Icons = {
   image: Image,
   mail: Mail,
   lock: Lock,
+  refresh: RefreshCw,
 
   gitHub: (props: LucideProps) => (
     <svg viewBox="0 0 438.549 438.549" {...props}>

@@ -24,6 +24,7 @@ import {
   createCollectionAction,
   updateCollectionAction,
 } from "@/_actions/collections";
+import { Icons } from "@/components/layouts/icons";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Select,
@@ -37,6 +38,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { ImageDialog } from "@/features/medias";
 import { DocumentType, gql } from "@/gql";
+import { slugify } from "@/lib/utils";
 import { useQuery } from "@urql/next";
 import { nanoid } from "nanoid";
 import Link from "next/link";
@@ -157,7 +159,16 @@ function CollectionForm({ collection }: CollectionFormProps) {
     },
   });
 
-  const { register, handleSubmit } = form;
+  const { register, handleSubmit, setValue, watch } = form;
+  const label = watch("label");
+
+  // Función para generar el slug basado en el label
+  const generateSlug = () => {
+    if (label && typeof label === "string" && label.trim() !== "") {
+      const generatedSlug = slugify(label);
+      setValue("slug", generatedSlug, { shouldValidate: true });
+    }
+  };
 
   const onSubmit = handleSubmit(async (data: InsertCollection) => {
     setIsPending(true);
@@ -224,14 +235,26 @@ function CollectionForm({ collection }: CollectionFormProps) {
 
           <FormItem>
             <FormLabel className="text-sm">Slug*</FormLabel>
-            <FormControl>
-              <Input
-                defaultValue={collection?.slug}
-                aria-invalid={!!form.formState.errors.slug}
-                placeholder="Ingrese el slug de la colección."
-                {...register("slug")}
-              />
-            </FormControl>
+            <div className="flex gap-2">
+              <FormControl className="flex-1">
+                <Input
+                  defaultValue={collection?.slug}
+                  aria-invalid={!!form.formState.errors.slug}
+                  placeholder="Ingrese el slug de la colección."
+                  {...register("slug")}
+                />
+              </FormControl>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={generateSlug}
+                disabled={!label || label.trim() === ""}
+                className="flex-shrink-0"
+                title="Generar slug desde el label"
+              >
+                <Icons.refresh className="h-4 w-4" />
+              </Button>
+            </div>
             <FormMessage />
           </FormItem>
 

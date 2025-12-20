@@ -33,7 +33,7 @@ import {
   SelectProducts,
   products,
 } from "@/lib/supabase/schema";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, slugify } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@urql/next";
 import { createInsertSchema } from "drizzle-zod";
@@ -97,7 +97,7 @@ function ProductFrom({
     } as ProductFormData,
   });
 
-  const { register, control, handleSubmit } = form;
+  const { register, control, handleSubmit, setValue, watch } = form;
 
   const { fields, append, remove } = useFieldArray({
     control: control as any,
@@ -107,6 +107,15 @@ function ProductFrom({
   // Observar cambios en precio y descuento para calcular el precio final
   const price = useWatch({ control, name: "price" });
   const discount = useWatch({ control, name: "discount" });
+  const name = watch("name");
+
+  // Función para generar el slug basado en el nombre
+  const generateSlug = () => {
+    if (name && typeof name === "string" && name.trim() !== "") {
+      const generatedSlug = slugify(name);
+      setValue("slug", generatedSlug, { shouldValidate: true });
+    }
+  };
 
   // Calcular el precio final con descuento
   const calculateFinalPrice = () => {
@@ -205,14 +214,26 @@ function ProductFrom({
 
           <FormItem>
             <FormLabel className="text-sm">Slug*</FormLabel>
-            <FormControl>
-              <Input
-                defaultValue={product?.slug}
-                aria-invalid={!!form.formState.errors.slug}
-                placeholder="Type Product slug."
-                {...register("slug")}
-              />
-            </FormControl>
+            <div className="flex gap-2">
+              <FormControl className="flex-1">
+                <Input
+                  defaultValue={product?.slug}
+                  aria-invalid={!!form.formState.errors.slug}
+                  placeholder="Type Product slug."
+                  {...register("slug")}
+                />
+              </FormControl>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={generateSlug}
+                disabled={!name || name.trim() === ""}
+                className="flex-shrink-0"
+                title="Generar slug desde el nombre"
+              >
+                <Icons.refresh className="h-4 w-4" />
+              </Button>
+            </div>
             <FormMessage />
           </FormItem>
 
