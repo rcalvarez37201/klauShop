@@ -6,16 +6,18 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { getPageMetadata } from "@/config/site";
+import { getPageMetadata, getPageTitle, siteConfig } from "@/config/site";
 // import { ProductCommentsSection } from "@/features/comments";
 import {
   ProductCard,
   ProductImageShowcase,
   ProductStockAndFormWrapper,
+  ShareProductButton,
 } from "@/features/products";
 import { AddToWishListButton } from "@/features/wishlists";
 import { gql } from "@/gql";
 import { getServiceClient } from "@/lib/urql-service";
+import { getURL, keytoUrl, stripHtml } from "@/lib/utils";
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -26,7 +28,6 @@ type Props = {
     slug: string;
   };
 };
-export const metadata: Metadata = getPageMetadata();
 
 const ProductDetailPageQuery = gql(/* GraphQL */ `
   query ProductDetailPageQuery($productSlug: String) {
@@ -35,6 +36,7 @@ const ProductDetailPageQuery = gql(/* GraphQL */ `
         node {
           id
           name
+          slug
           description
           rating
           price
@@ -72,10 +74,100 @@ const ProductDetailPageQuery = gql(/* GraphQL */ `
   }
 `);
 
-async function ProductDetailPage({ params }: Props) {
-  const { data } = await getServiceClient().query(ProductDetailPageQuery, {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const queryVars: {
+    productSlug: string;
+  } = {
     productSlug: params.slug,
-  });
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data } = await getServiceClient().query(
+    ProductDetailPageQuery as any,
+    queryVars as any,
+  );
+
+  if (!data || !data.productsCollection || !data.productsCollection.edges) {
+    return getPageMetadata();
+  }
+
+  const productNode = data.productsCollection.edges[0]?.node;
+  if (!productNode) {
+    return getPageMetadata();
+  }
+
+  const { name, description, price, discount, slug } = productNode;
+
+  // Calcular precio con descuento
+  const discountValue = discount ? parseFloat(discount.toString()) : 0;
+  const hasDiscount = discountValue > 0;
+  const priceValue = parseFloat(price.toString());
+  const discountedPrice = hasDiscount
+    ? priceValue - (priceValue * discountValue) / 100
+    : priceValue;
+
+  // Limpiar descripción de HTML
+  const cleanDescription = stripHtml(description || "");
+  const metaDescription =
+    cleanDescription.substring(0, 160) ||
+    `${name} - ${hasDiscount ? `Precio especial: ${discountedPrice.toFixed(2)} CUP` : `Precio: ${priceValue.toFixed(2)} CUP`}`;
+
+  // Obtener URLs
+  const baseUrl = getURL();
+  const productUrl = `${baseUrl}shop/${slug}`;
+  const imageUrl = productNode.featuredImage?.key
+    ? keytoUrl(productNode.featuredImage.key)
+    : undefined;
+
+  // Construir título con precio
+  const priceText = hasDiscount
+    ? `${discountedPrice.toFixed(2)} CUP (${discountValue}% OFF)`
+    : `${priceValue.toFixed(2)} CUP`;
+
+  return {
+    title: getPageTitle(`${name} - ${priceText}`),
+    description: metaDescription,
+    openGraph: {
+      title: `${name} - ${priceText}`,
+      description: metaDescription,
+      url: productUrl,
+      siteName: siteConfig.name,
+      images: imageUrl
+        ? [
+            {
+              url: imageUrl,
+              width: 1200,
+              height: 1200,
+              alt: productNode.featuredImage?.alt || name,
+            },
+          ]
+        : [],
+      type: "website",
+      locale: "es_ES",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${name} - ${priceText}`,
+      description: metaDescription,
+      images: imageUrl ? [imageUrl] : [],
+    },
+    alternates: {
+      canonical: productUrl,
+    },
+  };
+}
+
+async function ProductDetailPage({ params }: Props) {
+  const queryVars: {
+    productSlug: string;
+  } = {
+    productSlug: params.slug,
+  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data } = await getServiceClient().query(
+    ProductDetailPageQuery as any,
+    queryVars as any,
+  );
 
   if (!data || !data.productsCollection || !data.productsCollection.edges)
     return notFound();
@@ -136,7 +228,17 @@ async function ProductDetailPage({ params }: Props) {
                 )}
               </div>
             </div>
-            <AddToWishListButton productId={id} />
+            <div className="flex gap-2">
+              <ShareProductButton
+                name={name}
+                price={priceValue}
+                discount={discountValue}
+                description={description}
+                slug={productNode.slug}
+                imageKey={productNode.featuredImage?.key || null}
+              />
+              <AddToWishListButton productId={id} />
+            </div>
           </section>
 
           <Suspense>

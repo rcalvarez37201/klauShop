@@ -15,6 +15,7 @@ export { ProductStockDisplay } from "./ProductStockDisplay";
 export { default as RecommendationProducts } from "./RecommendationProducts";
 export { default as RecommendationProductsSkeleton } from "./RecommendationProductsSkeleton";
 export { SizeSelector } from "./SizeSelector";
+export { ShareProductButton } from "./ShareProductButton";
 export { default as WishlistProducts } from "./WishlistProducts";
 export { default as WishlistProductsSkeleton } from "./WishlistProductsSkeleton";
 export * from "./admin/ProductForm";

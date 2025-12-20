@@ -2639,6 +2639,7 @@ export type ProductDetailPageQueryQuery = {
         __typename?: "products";
         id: string;
         name: string;
+        slug: string;
         description?: string | null;
         rating: any;
         price: any;
@@ -6691,6 +6692,10 @@ export const ProductDetailPageQueryDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "name" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "slug" },
                             },
                             {
                               kind: "Field",
