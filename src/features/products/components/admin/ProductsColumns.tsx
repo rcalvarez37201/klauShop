@@ -10,9 +10,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DocumentType, gql } from "@/gql";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, keytoUrl } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { CheckCircle2, MoreHorizontal, Tag, XCircle } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { DeleteProductDialog } from "./DeleteProductDialog";
 
@@ -46,6 +47,35 @@ export const ProductColumnFragment = gql(/* GraphQL */ `
 const ProductsColumns: ColumnDef<{
   node: DocumentType<typeof ProductColumnFragment>;
 }>[] = [
+  {
+    accessorFn: (row) => row.node.featuredImage?.key || "",
+    accessorKey: "image",
+    header: () => <div className="text-center">Imagen</div>,
+    cell: ({ row }) => {
+      const product = row.original.node;
+      const imageKey = product.featuredImage?.key;
+
+      return (
+        <div className="flex justify-center">
+          {imageKey ? (
+            <div className="relative h-12 w-12 overflow-hidden rounded-md border border-border">
+              <Image
+                src={keytoUrl(imageKey)}
+                alt={product.featuredImage?.alt || product.name}
+                fill
+                className="object-cover"
+                sizes="48px"
+              />
+            </div>
+          ) : (
+            <div className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-muted text-xs text-muted-foreground">
+              Sin imagen
+            </div>
+          )}
+        </div>
+      );
+    },
+  },
   {
     accessorFn: (row) => row.node.name,
     accessorKey: "name",
