@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,8 +35,11 @@ const CollectionsColumns: ColumnDef<{
   node: DocumentType<typeof CollectionColumnsFragment>;
 }>[] = [
   {
+    accessorFn: (row) => row.node.label || "",
     accessorKey: "label",
-    header: () => <div className="text-left capitalize">Etiqueta</div>,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Etiqueta" />
+    ),
     cell: ({ row }) => {
       const collection = row.original.node;
 
@@ -58,8 +62,11 @@ const CollectionsColumns: ColumnDef<{
     },
   },
   {
+    accessorFn: (row) => row.node.slug || "",
     accessorKey: "slug",
-    header: () => <div className="">Slug</div>,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Slug" />
+    ),
     cell: ({ row }) => {
       const collection = row.original.node;
 
@@ -67,21 +74,23 @@ const CollectionsColumns: ColumnDef<{
     },
   },
   {
+    accessorFn: (row) => row.node.title || "",
     accessorKey: "title",
-    header: () => <div className="text-left capitalize">Título</div>,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Título" />
+    ),
     cell: ({ row }) => {
       const collection = row.original.node;
 
-      return (
-        <p className="font-medium capitalize hover:underline">
-          {collection.title}
-        </p>
-      );
+      return <p className="font-medium">{collection.title}</p>;
     },
   },
   {
+    accessorFn: (row) => row.node.collections?.label || "",
     accessorKey: "parent",
-    header: () => <div className="text-left capitalize">Padre</div>,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Padre" />
+    ),
     cell: ({ row }) => {
       const collection = row.original.node;
 
