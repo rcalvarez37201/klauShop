@@ -7,8 +7,6 @@ import {
   ProductCard,
   ProductCardFragment,
   ProductCardSkeleton,
-  ProductSlider,
-  ProductSliderSkeleton,
 } from "@/features/products";
 import { getCurrentUser } from "@/features/users/actions";
 import { DocumentType, gql } from "@/gql";
@@ -136,6 +134,49 @@ export default async function Home({
     ({ node }) => (node.stock ?? 0) > 0,
   );
 
+  function ProductSubCollectionsCircles({
+    collections,
+  }: CollectionsCardsProps) {
+    return (
+      <section className="flex justify-start md:justify-center items-center gap-x-6 md:gap-x-10 overflow-x-auto py-12 px-6 md:px-8">
+        {collections.map(({ node }) => (
+          <Link
+            href={`/collections/${node.slug}`}
+            key={`collection_circle_${node.id}`}
+            className="flex-shrink-0"
+          >
+            <div
+              className={cn(
+                "relative bg-secondary rounded-full flex justify-center items-center overflow-hidden shadow-md",
+                "w-[180px] h-[180px]",
+                "md:w-[240px] md:h-[240px]",
+                // "md:w-[320px] md:h-[320px]"
+                // "lg:w-[360px] lg:h-[360px]"
+              )}
+            >
+              <Image
+                src={keytoUrl(node.featuredImage.key)}
+                alt={node.featuredImage.alt}
+                width={320}
+                height={320}
+                className={cn(
+                  "object-center object-cover hover:scale-105 transition-all duration-500 rounded-full",
+                  "w-[180px] h-[180px]",
+                  "md:w-[240px] md:h-[240px]",
+                  // "md:w-[280px] md:h-[280px]",
+                  // "lg:w-[320px] lg:h-[320px]"
+                )}
+              />
+            </div>
+            <p className="text-black text-center mt-3 font-semibold">
+              {node.label}
+            </p>
+          </Link>
+        ))}
+      </section>
+    );
+  }
+
   return (
     <main>
       <HeroSection />
@@ -147,9 +188,13 @@ export default async function Home({
           />
         ) : null}
 
-        {/* {data.products && data.products.edges ? (
-          <FeaturedProductsCards products={data.products.edges} />
-        ) : null} */}
+        {sliderInStock.length > 0 ? (
+          <FeaturedProductsCards
+            products={sliderInStock}
+            title="Te encantarán"
+            description="Productos que te encantarán si te gusta la moda casual y urbana."
+          />
+        ) : null}
         {/* <CollectionGrid /> */}
 
         <BannerCollectionCard
@@ -161,24 +206,24 @@ export default async function Home({
           imageLeft={false}
         />
 
-        {sliderInStock.length > 0 ? (
-          <Suspense fallback={<ProductSliderSkeleton />}>
-            <ProductSlider
-              products={sliderInStock}
-              title="Productos Destacados"
-            />
-          </Suspense>
+        {/* {sliderInStock.length > 0 ? (
+          // <Suspense fallback={<ProductSliderSkeleton />}>
+          <ProductSlider
+            products={sliderInStock}
+            title="Productos Destacados"
+          />
+        ) : // </Suspense>
+        null} */}
+        {data.products && data.products.edges ? (
+          <FeaturedProductsCards
+            products={data.products.edges}
+            title="Productos Destacados"
+            description="Productos destacados para tu día a día."
+          />
         ) : null}
 
-        <BannerCollectionCard
-          imageSrc="https://bhwyagfoyylgrdgyngrm.supabase.co/storage/v1/object/public/klaushop/public/banner-skin-care.jpg"
-          title="Piel."
-          description="Creemos en una belleza honesta. Fórmulas botánicas y eficaces con pocos ingredientes, sin tóxicos, para devolverle a tu piel su equilibrio natural y resplandor."
-          ctatext="Cuidar mi Piel"
-          collectionHref="/collections/cupboard"
-          imageLeft={true}
-        />
         <DifferentFeatureCards />
+
         <BannerCollectionCard
           imageSrc="https://bhwyagfoyylgrdgyngrm.supabase.co/storage/v1/object/public/klaushop/public/banner-swimwear.jpg"
           title="Verano."
@@ -194,8 +239,8 @@ export default async function Home({
 
 function HeroSection() {
   return (
-    <section className="w-full h-[400px] md:h-[800px] mx-auto flex justify-center">
-      <div className="relative w-full h-[400px] md:h-[800px]">
+    <section className="w-full h-[500px] sm:h-[600px] md:h-[800px] mx-auto flex justify-center">
+      <div className="relative w-full h-[500px] sm:h-[600px] md:h-[800px]">
         <Image
           alt="Furniture"
           src="https://bhwyagfoyylgrdgyngrm.supabase.co/storage/v1/object/public/klaushop/public/bg-hero.jpg"
@@ -207,44 +252,34 @@ function HeroSection() {
         />
       </div>
 
-      <div className="max-w-screen-2xl mx-auto absolute py-8 h-[400px] md:h-[800px] w-full">
-        <div className="flex flex-col justify-center z-30 h-full container">
-          <p className="text-sm md:text-md uppercase tracking-widest text-white ">
+      <div className="max-w-screen-2xl mx-auto absolute py-8 h-[500px] sm:h-[600px] md:h-[800px] w-full">
+        <div className="flex flex-col justify-center z-30 h-full container px-4 sm:px-6">
+          <p className="text-xs sm:text-sm md:text-base uppercase tracking-wider sm:tracking-widest text-white">
             {siteConfig.name}
           </p>
-          <h1 className="text-5xl md:text-9xl font-bold text-white my-4">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-8xl xl:text-9xl font-bold text-white my-3 sm:my-4 leading-tight">
             Moda para
             <br />
             el día a día.
           </h1>
-          <p className="text-sm md:text-md tracking-widest text-white mb-4">
+          <p className="text-xs sm:text-sm md:text-base tracking-wide sm:tracking-widest text-white mb-3 sm:mb-4">
             Envíos en {siteConfig.zones} • Encargos Shein/Temu/Amazon.
           </p>
 
-          <div className="flex space-x-4 mt-5 max-w-screen">
+          <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-3 sm:space-y-0 mt-4 sm:mt-5 max-w-screen">
             <Link
               href="/shop"
               className={cn(
                 buttonVariants({ variant: "outline", size: "lg" }),
-                "border-2 border-white text-white rounded px-8 py-3 ",
-                "md:px-16 md:py-6",
-                "hover:text-zinc-600 hover:bg-white",
+                "border-2 border-white text-white rounded px-6 py-2.5 text-sm",
+                "sm:px-8 sm:py-3",
+                "md:px-12 md:py-4 md:text-base",
+                "lg:px-16 lg:py-6 lg:text-lg",
+                "hover:text-zinc-600 hover:bg-white w-full sm:w-auto text-center",
               )}
             >
               Nuevos productos
             </Link>
-
-            {/* <Link
-              href="https://github.com/clonglam/HIYORI-master"
-              target="_blank"
-              className={cn(
-                buttonVariants({ variant: "default", size: "lg" }),
-                "border-2 border-primary text-white rounded px-8 py-3 ",
-                "md:px-16 md:py-6"
-              )}
-            >
-              View the Code
-            </Link> */}
           </div>
         </div>
       </div>
@@ -260,61 +295,25 @@ interface CollectionsCardsProps {
   collections: { node: DocumentType<typeof CollectionCardFragment> }[];
 }
 
-function ProductSubCollectionsCircles({ collections }: CollectionsCardsProps) {
-  return (
-    <section className="flex justify-start md:justify-center items-center gap-x-6 md:gap-x-10 overflow-x-auto py-12 px-6 md:px-8">
-      {collections.map(({ node }) => (
-        <Link
-          href={`/collections/${node.slug}`}
-          key={`collection_circle_${node.id}`}
-          className="flex-shrink-0"
-        >
-          <div
-            className={cn(
-              "relative bg-secondary rounded-full flex justify-center items-center overflow-hidden shadow-md",
-              "w-[180px] h-[180px]",
-              "md:w-[240px] md:h-[240px]",
-              // "md:w-[320px] md:h-[320px]"
-              // "lg:w-[360px] lg:h-[360px]"
-            )}
-          >
-            <Image
-              src={keytoUrl(node.featuredImage.key)}
-              alt={node.featuredImage.alt}
-              width={320}
-              height={320}
-              className={cn(
-                "object-center object-cover hover:scale-105 transition-all duration-500 rounded-full",
-                "w-[180px] h-[180px]",
-                "md:w-[240px] md:h-[240px]",
-                // "md:w-[280px] md:h-[280px]",
-                // "lg:w-[320px] lg:h-[320px]"
-              )}
-            />
-          </div>
-          <p className="text-black text-center mt-3 font-semibold">
-            {node.label}
-          </p>
-        </Link>
-      ))}
-    </section>
-  );
-}
-
 interface FeaturedProductsCardsProps {
   products: { node: DocumentType<typeof ProductCardFragment> }[];
+  title?: string;
+  description?: string;
 }
 
-function FeaturedProductsCards({ products }: FeaturedProductsCardsProps) {
+function FeaturedProductsCards({
+  products,
+  title,
+  description,
+}: FeaturedProductsCardsProps) {
   return (
     <section className="container mt-12">
       <div className="">
         <h2 className="font-semibold text-2xl md:text-3xl mb-1 md:mb-3">
-          Featured Products
+          {title}
         </h2>
         <p className="max-w-4xl text-sm md:text-md leading-[1.5] tracking-[-2%] mb-2">
-          Ideas to help Bring Home to Life based on your recently viewed
-          products. Share your space on Instagram and tag @Penpengrian
+          {description}
         </p>
       </div>
 
@@ -331,6 +330,15 @@ function FeaturedProductsCards({ products }: FeaturedProductsCardsProps) {
       </div>
     </section>
   );
+}
+
+interface BannerCollectionCardProps {
+  imageSrc: string;
+  title: string;
+  description: string;
+  ctatext: string;
+  collectionHref: string;
+  imageLeft: boolean;
 }
 
 function DifferentFeatureCards() {
@@ -361,35 +369,30 @@ function DifferentFeatureCards() {
     },
   ];
   return (
-    <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 pt-5 gap-y-8 gap-x-5 md:gap-x-12 mx-auto">
+    <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 pt-5 gap-y-8 gap-x-5 md:gap-x-8 lg:gap-x-12 mx-auto px-4 sm:px-6">
       {features.map(({ Icon, title, description }, index) => (
         <div
-          className="text-center  max-w-[18rem]"
+          className="text-center mx-auto max-w-[20rem] md:max-w-[18rem]"
           key={`FeatureCards_${index}`}
         >
-          <div className="flex justify-center items-center p-5">
+          <div className="flex justify-center items-center p-4 sm:p-5">
             <Icon
-              width={45}
-              height={45}
-              className="mb-5 text-accent font-light"
+              width={40}
+              height={40}
+              className="sm:w-[45px] sm:h-[45px] mb-4 sm:mb-5 text-accent font-light"
             />
           </div>
 
-          <h4 className="text-xl font-semibold mb-3 text-primary">{title}</h4>
-          <p className="text-lg text-muted-foreground">{description}</p>
+          <h4 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-primary">
+            {title}
+          </h4>
+          <p className="text-sm sm:text-base lg:text-lg text-muted-foreground leading-relaxed">
+            {description}
+          </p>
         </div>
       ))}
     </section>
   );
-}
-
-interface BannerCollectionCardProps {
-  imageSrc: string;
-  title: string;
-  description: string;
-  ctatext: string;
-  collectionHref: string;
-  imageLeft: boolean;
 }
 
 function BannerCollectionCard({
@@ -401,10 +404,10 @@ function BannerCollectionCard({
   imageLeft,
 }: BannerCollectionCardProps) {
   return (
-    <section className="max-w-[1920px] mx-auto h-[620px] md:h-[580px] bg-[#FFF8EE] grid grid-cols-12 my-16">
+    <section className="max-w-[1920px] mx-auto min-h-[500px] sm:min-h-[560px] md:h-[580px] bg-[#FFF8EE] grid grid-cols-12 my-8 sm:my-12 md:my-16">
       <div
         className={cn(
-          "relative w-full h-[340px] md:h-[580px] col-span-12 md:col-span-8 overflow-hidden",
+          "relative w-full h-[280px] sm:h-[320px] md:h-[580px] col-span-12 md:col-span-8 overflow-hidden",
           imageLeft ? "md:order-1" : "md:order-2",
         )}
       >
@@ -418,17 +421,22 @@ function BannerCollectionCard({
 
       <div
         className={cn(
-          "col-span-12 md:col-span-4 pb-6 md:py-20 px-6 md:px-16",
+          "col-span-12 md:col-span-4 py-6 sm:py-8 md:py-20 px-4 sm:px-6 md:px-12 lg:px-16 flex flex-col justify-center",
           imageLeft ? "md:order-2" : "md:order-1",
         )}
       >
-        <h2 className="text-xl md:text-3xl font-semibold mb-3">{title}</h2>
-        <p className="text-xs leading-[1.5] md:text-lg tracking-tight mb-5 md:mb-12 text-left max-w-md">
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-2 sm:mb-3">
+          {title}
+        </h2>
+        <p className="text-xs sm:text-sm leading-[1.6] md:text-base lg:text-lg tracking-tight mb-4 sm:mb-6 md:mb-12 text-left max-w-md">
           {description}
         </p>
         <Link
           href={collectionHref}
-          className={cn(buttonVariants(), "rounded-full text-xs md:text-md")}
+          className={cn(
+            buttonVariants(),
+            "rounded-full text-xs sm:text-sm md:text-base w-full sm:w-auto sm:inline-flex sm:justify-center",
+          )}
         >
           {ctatext}
         </Link>

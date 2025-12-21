@@ -120,12 +120,12 @@ export function ProductCard({
   return (
     <Card
       className={cn(
-        "w-full border-0 rounded-lg hover:shadow-xl transition-all duration-300",
+        "w-full border-0 rounded-lg hover:shadow-xl transition-all duration-300 flex flex-col min-w-0",
         className,
       )}
       {...props}
     >
-      <CardContent className="relative p-0 overflow-hidden rounded-t-lg group">
+      <CardContent className="relative p-0 overflow-hidden rounded-t-lg group w-full">
         <Link
           href={`/shop/${slug}`}
           className="block overflow-hidden rounded-t-lg relative"
@@ -137,7 +137,7 @@ export function ProductCard({
             width={400}
             height={400}
             className={cn(
-              "aspect-[1/1] object-cover rounded-t-lg object-center transition-all duration-500",
+              "aspect-[1/1] w-full object-cover rounded-t-lg object-center transition-all duration-500",
               hasMultipleImages &&
                 "group-hover:opacity-0 group-hover:scale-[1.02]",
             )}
@@ -149,12 +149,15 @@ export function ProductCard({
               alt={secondImage.alt || featuredImage.alt}
               width={400}
               height={400}
-              className="aspect-[1/1] object-cover rounded-t-lg object-center absolute inset-0 opacity-0 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-500"
+              className="aspect-[1/1] w-full object-cover rounded-t-lg object-center absolute inset-0 opacity-0 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-500"
             />
           )}
         </Link>
         {badge && (
-          <Badge className="absolute top-2 left-2" variant={badge as BadgeType}>
+          <Badge
+            className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 text-[10px] sm:text-xs md:text-sm px-1.5 py-0.5 sm:px-2 sm:py-1"
+            variant={badge as BadgeType}
+          >
             {badge === "new_product"
               ? "Nuevo"
               : badge === "best_sale"
@@ -163,15 +166,20 @@ export function ProductCard({
           </Badge>
         )}
         {hasDiscount && (
-          <Badge className="absolute bottom-2 left-2 bg-red-500 hover:bg-red-600 text-white">
+          <Badge className="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2 bg-red-500 hover:bg-red-600 text-white text-[10px] sm:text-xs md:text-sm px-1.5 py-0.5 sm:px-2 sm:py-1">
             -{discountValue}%
           </Badge>
         )}
-        <div className="absolute top-2 right-2">
+        <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-10">
           <Suspense
             fallback={
-              <Button variant="ghost" disabled>
-                <Icons.heart className={"w-4 h-4 md:w-6 md:h-6 fill-none"} />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10"
+                disabled
+              >
+                <Icons.heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 fill-none" />
               </Button>
             }
           >
@@ -180,46 +188,44 @@ export function ProductCard({
         </div>
       </CardContent>
 
-      <CardHeader className="p-1 px-2 pb-2 md:pb-4 md:px-4 flex flex-col">
-        <div>
+      <CardHeader className="p-2 sm:p-3 pb-2 sm:pb-3 md:p-4 md:pb-4 flex flex-col gap-1.5 sm:gap-2 w-full min-w-0">
+        <div className="flex flex-col gap-0.5 sm:gap-1 w-full min-w-0">
           {mainCategory && (
             <Link
               href={`/collections/${mainCategory.slug}`}
-              className="text-xs text-gray-600"
+              className="text-[10px] sm:text-xs md:text-sm text-gray-600 hover:text-gray-800 truncate"
             >
               {mainCategory.label}
             </Link>
           )}
-          <CardTitle>
+          <CardTitle className="leading-tight min-w-0 w-full">
             <Link
               href={`/shop/${slug}`}
-              className="hover:underline text-base md:text-lg text-primary-800"
+              className="hover:underline text-xs sm:text-sm md:text-base lg:text-lg text-primary-800 line-clamp-2 block"
             >
               {name}
             </Link>
           </CardTitle>
 
-          <div
-            className={`flex md:justify-between flex-col ${hasDiscount ? "" : "md:flex-row"}`}
-          >
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-1.5 sm:gap-2 mt-0.5 sm:mt-1 w-full min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0 flex-1">
               {hasDiscount ? (
                 <>
-                  <span className="text-md font-bold text-red-600">
+                  <span className="text-xs sm:text-sm md:text-base font-bold text-red-600 whitespace-nowrap">
                     {discountedPrice.toFixed(2)} CUP
                   </span>
-                  <span className="text-xs text-gray-500 line-through">
+                  <span className="text-[10px] sm:text-xs md:text-sm text-gray-500 line-through whitespace-nowrap">
                     {priceValue.toFixed(2)} CUP
                   </span>
                 </>
               ) : (
-                <span className="text-lg font-bold">
+                <span className="text-sm sm:text-base md:text-lg font-bold whitespace-nowrap">
                   {priceValue.toFixed(2)} CUP
                 </span>
               )}
             </div>
 
-            <div className="text-sm">
+            <div className="text-[10px] sm:text-xs md:text-sm whitespace-nowrap flex-shrink-0">
               {product.stock === 0 ? (
                 <span className="text-red-500 font-semibold">Out of Stock</span>
               ) : product.stock && product.stock < 5 ? (
@@ -234,47 +240,38 @@ export function ProductCard({
             </div>
           </div>
         </div>
-        <div className="flex flex-col md:flex-row md:justify-between mt-0 gap-y-2">
-          <div className="flex items-center gap-x-1 flex-wrap">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1 w-full min-w-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap min-w-0 flex-1">
             {colorsToShow.length > 0 &&
               colorsToShow.map((color) => (
                 <div
                   key={color}
-                  className="w-4 h-4 rounded-full border border-gray-300"
+                  className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-full border border-gray-300 flex-shrink-0"
                   style={{ backgroundColor: color }}
                 />
               ))}
             {remainingColors > 0 && (
-              <span className="text-xs text-gray-500 font-medium">
+              <span className="text-[10px] sm:text-xs text-gray-500 font-medium whitespace-nowrap">
                 +{remainingColors}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-x-1 flex-wrap">
+          <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap min-w-0 flex-1 sm:justify-end">
             {sizesToShow.length > 0 &&
               sizesToShow.map((size) => (
                 <span
                   key={size}
-                  className="text-xs px-1.5 py-0.5 rounded border border-gray-300 bg-gray-50 text-gray-700"
+                  className="text-[10px] sm:text-xs md:text-sm px-1 sm:px-1.5 py-0.5 rounded border border-gray-300 bg-gray-50 text-gray-700 whitespace-nowrap"
                 >
                   {size}
                 </span>
               ))}
             {remainingSizes > 0 && (
-              <span className="text-xs text-gray-500 font-medium">
+              <span className="text-[10px] sm:text-xs text-gray-500 font-medium whitespace-nowrap">
                 +{remainingSizes}
               </span>
             )}
           </div>
-          {/* <Suspense
-            fallback={
-              <Button className="rounded-full p-0 h-8 w-8" disabled>
-                <Icons.basket className="h-5 w-5 md:h-4 md:w-4" />
-              </Button>
-            }
-          >
-            <AddToCartButton productId={id} />
-          </Suspense> */}
         </div>
       </CardHeader>
     </Card>
