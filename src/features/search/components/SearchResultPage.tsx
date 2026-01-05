@@ -55,7 +55,7 @@ const SearchResultPage = ({
   onLoadMore: (cursor: string) => void;
   isLastPage: boolean;
 }) => {
-  const MAX_AUTOFILL_PAGES = 5;
+  const MAX_AUTOFILL_PAGES = 20;
 
   const variablesKey = useMemo(() => {
     // We intentionally exclude `after` because this component manages it

@@ -71,7 +71,7 @@ function SearchProductsInifiteScroll({
           variables={{
             ...baseVariables,
             after,
-            first: i === 0 ? 4 : 8,
+            first: i === 0 ? 16 : 24,
           }}
           isLastPage={i === cursors.length - 1}
           onLoadMore={loadMoreHandler}
@@ -136,7 +136,7 @@ const searchParamsVariablesFactory = (
             ? collections
             : undefined,
     orderBy,
-    first: 4,
+    first: 16,
     after: undefined,
   };
   return varaibles;
